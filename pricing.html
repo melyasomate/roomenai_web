@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RoomAI — Pricing</title>
+<meta name="description" content="Simple pricing. Free to try, fair to scale, designed for everyone from renters to interior designers." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="styles.css" />
+
+<style>
+  .bg-grid {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 80px 80px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 0%, transparent 80%);
+  }
+  main { position: relative; z-index: 2; }
+
+  /* ============================================================
+     PAGE HERO
+     ============================================================ */
+  .page-hero {
+    padding: 180px 0 60px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .page-hero::before {
+    content: "";
+    position: absolute;
+    top: -200px; left: 50%;
+    transform: translateX(-50%);
+    width: 800px; height: 600px;
+    background: radial-gradient(ellipse, rgba(29,158,117,0.18), transparent 60%);
+    filter: blur(40px);
+    z-index: -1;
+  }
+  .page-hero h1 { max-width: 14ch; margin: 24px auto 24px; }
+  .page-hero .lead { max-width: 540px; margin: 0 auto; }
+
+  /* ============================================================
+     BILLING TOGGLE
+     ============================================================ */
+  .billing-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin: 40px auto 0;
+    padding: 4px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    position: relative;
+  }
+  .billing-toggle button {
+    position: relative;
+    z-index: 1;
+    padding: 10px 22px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 999px;
+    color: var(--text-dim);
+    transition: color 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .billing-toggle button.active { color: var(--text); }
+  .billing-toggle .pill-active {
+    position: absolute;
+    top: 4px; bottom: 4px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    transition: transform 0.4s var(--ease-out-quart), width 0.4s var(--ease-out-quart);
+    z-index: 0;
+  }
+  .save-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 2px 8px;
+    background: rgba(29,158,117,0.18);
+    color: var(--accent-hi);
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* ============================================================
+     PRICING GRID
+     ============================================================ */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    max-width: 1180px;
+    margin: 56px auto 0;
+    align-items: stretch;
+  }
+  @media (max-width: 920px) {
+    .pricing-grid { grid-template-columns: 1fr; gap: 12px; }
+  }
+
+  .plan {
+    padding: 36px 32px;
+    background: linear-gradient(180deg, var(--bg-elev-1), var(--bg-elev-2));
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.4s var(--ease-out-quart), border-color 0.3s;
+  }
+  .plan:hover {
+    transform: translateY(-4px);
+    border-color: var(--border-strong);
+  }
+  .plan-featured {
+    background:
+      linear-gradient(180deg, rgba(29,158,117,0.08), transparent 30%),
+      linear-gradient(180deg, var(--bg-elev-2), var(--bg-elev-1));
+    border-color: rgba(29,158,117,0.4);
+    box-shadow: 0 30px 80px -30px var(--accent-glow);
+  }
+  .plan-featured::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(180deg, rgba(29,158,117,0.6), transparent 50%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+  .plan-badge {
+    position: absolute;
+    top: -10px;
+    left: 32px;
+    padding: 4px 10px;
+    background: var(--accent);
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    border-radius: 999px;
+  }
+
+  .plan-name {
+    font-family: var(--font-display);
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+  }
+  .plan-tag {
+    font-family: var(--font-display);
+    font-size: 19px;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+    margin-bottom: 24px;
+    color: var(--text);
+    min-height: 48px;
+  }
+
+  .plan-price {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin-bottom: 6px;
+    font-family: var(--font-display);
+    letter-spacing: -0.04em;
+  }
+  .plan-price .num {
+    font-size: 64px;
+    font-weight: 600;
+    line-height: 1;
+    background: linear-gradient(180deg, #fff, rgba(255,255,255,0.5));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+    transition: transform 0.4s var(--ease-out-quart);
+  }
+  .plan-price .cur {
+    font-size: 28px;
+    color: var(--text-dim);
+    font-weight: 500;
+  }
+  .plan-price .per {
+    font-size: 14px;
+    color: var(--text-faint);
+    margin-left: 4px;
+    font-family: var(--font-body);
+    letter-spacing: 0;
+  }
+  .plan-bill {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-faint);
+    margin-bottom: 24px;
+    height: 16px;
+    letter-spacing: 0.05em;
+  }
+  .plan-cta { margin-bottom: 28px; }
+  .plan-cta .btn { width: 100%; justify-content: center; }
+
+  .plan-feats {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 28px;
+    border-top: 1px dashed var(--border);
+  }
+  .plan-feats li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--text-dim);
+    line-height: 1.45;
+  }
+  .plan-feats li .ck {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: rgba(29,158,117,0.18);
+    color: var(--accent-hi);
+    display: grid;
+    place-items: center;
+    font-size: 10px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .plan-feats li.muted .ck { background: rgba(255,255,255,0.05); color: var(--text-faint); }
+  .plan-feats li.muted { color: var(--text-faint); }
+  .plan-feats li b { color: var(--text); font-weight: 500; }
+
+  /* ============================================================
+     CREDIT EXPLAINER
+     ============================================================ */
+  .credit-note {
+    text-align: center;
+    margin-top: 48px;
+    font-size: 13px;
+    color: var(--text-faint);
+  }
+
+  /* ============================================================
+     COMPARE TABLE
+     ============================================================ */
+  .compare-table-wrap {
+    margin-top: 100px;
+    overflow-x: auto;
+  }
+  .compare-table {
+    width: 100%;
+    min-width: 720px;
+    border-collapse: collapse;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .compare-table th, .compare-table td {
+    padding: 18px 24px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .compare-table thead th {
+    background: rgba(255,255,255,0.025);
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    text-transform: none;
+  }
+  .compare-table thead th:first-child {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--text-faint);
+    font-weight: 500;
+  }
+  .compare-table thead th.featured { color: var(--accent-hi); }
+  .compare-table tbody tr.section td {
+    padding-top: 32px;
+    padding-bottom: 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    border-bottom: 1px solid var(--border);
+  }
+  .compare-table td:first-child { color: var(--text); }
+  .compare-table td:not(:first-child) { color: var(--text-dim); }
+  .compare-table .yes { color: var(--accent-hi); font-size: 16px; }
+  .compare-table .no { color: var(--text-faint); }
+  .compare-table tbody tr:last-child td { border-bottom: none; }
+  .compare-table tbody tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* ============================================================
+     ENTERPRISE BANNER
+     ============================================================ */
+  .enterprise {
+    margin-top: 100px;
+    padding: 40px 48px;
+    background: linear-gradient(135deg, rgba(232,201,160,0.05), rgba(29,158,117,0.04));
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 32px;
+    align-items: center;
+  }
+  @media (max-width: 720px) { .enterprise { grid-template-columns: 1fr; padding: 32px 28px; } }
+  .enterprise h3 {
+    font-family: var(--font-display);
+    font-size: 28px;
+    letter-spacing: -0.025em;
+    margin-bottom: 8px;
+  }
+  .enterprise p { color: var(--text-dim); font-size: 15px; max-width: 540px; }
+
+  /* ============================================================
+     FAQ
+     ============================================================ */
+  .faq { max-width: 760px; margin: 0 auto; }
+  .faq-item { border-bottom: 1px solid var(--border); }
+  .faq-q {
+    width: 100%;
+    text-align: left;
+    padding: 24px 0;
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    transition: color 0.2s;
+  }
+  .faq-q:hover { color: var(--accent-hi); }
+  .faq-q .ico {
+    width: 24px; height: 24px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    display: grid;
+    place-items: center;
+    transition: transform 0.3s, background 0.3s, border-color 0.3s;
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+  .faq-item.open .faq-q .ico { transform: rotate(45deg); background: var(--accent); border-color: var(--accent); color: #fff; }
+  .faq-a { max-height: 0; overflow: hidden; transition: max-height 0.5s var(--ease-out-quart); }
+  .faq-a-inner { padding-bottom: 24px; color: var(--text-dim); font-size: 15px; line-height: 1.6; max-width: 600px; }
+
+  /* ============================================================
+     CTA
+     ============================================================ */
+  .cta-section { padding: 120px 0; text-align: center; overflow: hidden; }
+  .cta-card {
+    max-width: 920px; margin: 0 auto; padding: 80px 40px;
+    background: linear-gradient(180deg, var(--bg-elev-2), var(--bg-elev-1));
+    border: 1px solid var(--border-strong);
+    border-radius: 24px;
+    position: relative; overflow: hidden;
+  }
+  .cta-card::before {
+    content: ""; position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 100%, var(--accent-glow), transparent 70%);
+    pointer-events: none;
+  }
+  .cta-card > * { position: relative; }
+  .cta-card h2 { margin-bottom: 16px; }
+  .cta-card .lead { max-width: 480px; margin: 0 auto 32px; }
+</style>
+</head>
+
+<body>
+<div class="bg-grid"></div>
+<div class="cursor-blob"></div>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">
+      <span class="logo-mark"></span>
+      RoomAI
+    </a>
+    <div class="nav-links">
+      <a href="how-it-works.html">How it works</a>
+      <a href="pricing.html" class="active">Pricing</a>
+      <a href="index.html#showcase">Gallery</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <div class="nav-cta">
+      <a href="#" class="btn btn-ghost">Sign in</a>
+      <a href="#" class="btn btn-primary">Get the app <span class="btn-arrow">→</span></a>
+    </div>
+  </div>
+</nav>
+
+<main>
+
+<!-- PAGE HERO -->
+<section class="page-hero" data-screen-label="01 Pricing hero">
+  <div class="container">
+    <span class="pill" data-reveal><span class="pill-dot"></span> Free forever plan · No card to start</span>
+    <h1 class="display h1 text-grad" data-words>Fair pricing for beautiful rooms.</h1>
+    <p class="lead" data-reveal data-reveal-delay="400">
+      Pay for what you generate. No subscriptions for products you'll never use, no markups on the furniture itself.
+    </p>
+
+    <div class="billing-toggle" id="billingToggle" data-reveal data-reveal-delay="500">
+      <span class="pill-active" id="pillActive"></span>
+      <button data-billing="monthly" class="active">Monthly</button>
+      <button data-billing="yearly">
+        Yearly
+        <span class="save-badge">Save 20%</span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING GRID -->
+<section class="container">
+  <div class="pricing-grid" data-reveal-stagger>
+
+    <!-- FREE -->
+    <article class="plan" data-spotlight>
+      <div class="plan-name">Starter</div>
+      <p class="plan-tag">Test the waters. Restyle your favorite room — on us.</p>
+      <div class="plan-price">
+        <span class="cur">$</span>
+        <span class="num" data-price-monthly="0" data-price-yearly="0">0</span>
+        <span class="per">/ forever</span>
+      </div>
+      <div class="plan-bill"></div>
+      <div class="plan-cta">
+        <a href="#" class="btn btn-ghost btn-lg">Start free</a>
+      </div>
+      <ul class="plan-feats">
+        <li><span class="ck">✓</span> <b>3 restyles</b> per month</li>
+        <li><span class="ck">✓</span> All 14 style models</li>
+        <li><span class="ck">✓</span> Full shopping list with retail links</li>
+        <li><span class="ck">✓</span> Standard 1024×1024 renders</li>
+        <li class="muted"><span class="ck">·</span> No AR preview</li>
+        <li class="muted"><span class="ck">·</span> No chat-with-the-room</li>
+        <li class="muted"><span class="ck">·</span> No moodboard exports</li>
+      </ul>
+    </article>
+
+    <!-- PRO (featured) -->
+    <article class="plan plan-featured" data-spotlight>
+      <span class="plan-badge">Most popular</span>
+      <div class="plan-name">Pro</div>
+      <p class="plan-tag">For the whole home. Unlimited explorations, every feature on.</p>
+      <div class="plan-price">
+        <span class="cur">$</span>
+        <span class="num" data-price-monthly="14" data-price-yearly="11">14</span>
+        <span class="per">/ month</span>
+      </div>
+      <div class="plan-bill" data-bill-monthly="Billed monthly" data-bill-yearly="$132 billed yearly · save $36">Billed monthly</div>
+      <div class="plan-cta">
+        <a href="#" class="btn btn-primary btn-lg" data-magnet="0.15">
+          Start 14-day trial
+          <span class="btn-arrow">→</span>
+        </a>
+      </div>
+      <ul class="plan-feats">
+        <li><span class="ck">✓</span> <b>Unlimited restyles</b></li>
+        <li><span class="ck">✓</span> All 14 style models + custom prompts</li>
+        <li><span class="ck">✓</span> Chat-with-the-room editing</li>
+        <li><span class="ck">✓</span> AR preview on iOS &amp; Android</li>
+        <li><span class="ck">✓</span> 4K render exports</li>
+        <li><span class="ck">✓</span> Moodboard PDF exports</li>
+        <li><span class="ck">✓</span> Priority render queue (~3s)</li>
+        <li><span class="ck">✓</span> Lock items, multi-room projects</li>
+      </ul>
+    </article>
+
+    <!-- STUDIO -->
+    <article class="plan" data-spotlight>
+      <div class="plan-name">Studio</div>
+      <p class="plan-tag">For interior designers running client work at scale.</p>
+      <div class="plan-price">
+        <span class="cur">$</span>
+        <span class="num" data-price-monthly="49" data-price-yearly="39">49</span>
+        <span class="per">/ month</span>
+      </div>
+      <div class="plan-bill" data-bill-monthly="Per seat · billed monthly" data-bill-yearly="$468 billed yearly · save $120">Per seat · billed monthly</div>
+      <div class="plan-cta">
+        <a href="#" class="btn btn-ghost btn-lg">Talk to sales</a>
+      </div>
+      <ul class="plan-feats">
+        <li><span class="ck">✓</span> <b>Everything in Pro</b></li>
+        <li><span class="ck">✓</span> Client-facing project pages</li>
+        <li><span class="ck">✓</span> White-label moodboards (your logo)</li>
+        <li><span class="ck">✓</span> Trade-program pricing on furniture</li>
+        <li><span class="ck">✓</span> Custom style training</li>
+        <li><span class="ck">✓</span> Team workspaces &amp; SSO</li>
+        <li><span class="ck">✓</span> API access (2,000 calls/mo)</li>
+        <li><span class="ck">✓</span> Dedicated success manager</li>
+      </ul>
+    </article>
+
+  </div>
+
+  <p class="credit-note">
+    Plans renew automatically. Cancel anytime. <span style="color: var(--text-dim);">·</span>
+    Prices in USD. Furniture you purchase ships at retailer prices — RoomAI never marks anything up.
+  </p>
+</section>
+
+<!-- COMPARE TABLE -->
+<section class="section">
+  <div class="container">
+    <header class="section-header" data-reveal>
+      <span class="eyebrow">Compare</span>
+      <h2 class="display h2 text-grad">Every feature, every plan.</h2>
+    </header>
+
+    <div class="compare-table-wrap" data-reveal>
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>Features</th>
+            <th>Starter</th>
+            <th class="featured">Pro</th>
+            <th>Studio</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <tr class="section"><td colspan="4">Generation</td></tr>
+          <tr>
+            <td>Monthly restyles</td>
+            <td>3</td>
+            <td>Unlimited</td>
+            <td>Unlimited</td>
+          </tr>
+          <tr>
+            <td>Style models</td>
+            <td>14</td>
+            <td>14 + custom prompts</td>
+            <td>14 + custom training</td>
+          </tr>
+          <tr>
+            <td>Render resolution</td>
+            <td>1024 px</td>
+            <td>4K</td>
+            <td>4K + raw exports</td>
+          </tr>
+          <tr>
+            <td>Render queue</td>
+            <td>Standard (~10s)</td>
+            <td>Priority (~3s)</td>
+            <td>Priority (~3s)</td>
+          </tr>
+
+          <tr class="section"><td colspan="4">Editing</td></tr>
+          <tr>
+            <td>Chat-with-the-room</td>
+            <td><span class="no">—</span></td>
+            <td><span class="yes">✓</span></td>
+            <td><span class="yes">✓</span></td>
+          </tr>
+          <tr>
+            <td>Lock items</td>
+            <td><span class="no">—</span></td>
+            <td><span class="yes">✓</span></td>
+            <td><span class="yes">✓</span></td>
+          </tr>
+          <tr>
+            <td>Multi-room projects</td>
+            <td>1 room</td>
+            <td>Unlimited</td>
+            <td>Unlimited</td>
+          </tr>
+          <tr>
+            <td>AR preview</td>
+            <td><span class="no">—</span></td>
+            <td><span class="yes">✓</span></td>
+            <td><span class="yes">✓</span></td>
+          </tr>
+
+          <tr class="section"><td colspan="4">Shopping</td></tr>
+          <tr>
+            <td>Shopping list</td>
+            <td><span class="yes">✓</span></td>
+            <td><span class="yes">✓</span></td>
+            <td><span class="yes">✓</span></td>
+          </tr>
+          <tr>
+            <td>Budget slider</td>
+            <td><span class="yes">✓</span></td>
+            <td><span class="yes">✓</span></td>
+            <td><span class="yes">✓</span></td>
+          </tr>
+          <tr>
+            <td>One-click cart</td>
+            <td><span class="no">—</span></td>
+            <td><span class="yes">✓</span></td>
+            <td><span class="yes">✓</span></td>
+          </tr>
+          <tr>
+            <td>Trade pricing</td>
+            <td><span class="no">—</span></td>
+            <td><span class="no">—</span></td>
+            <td><span class="yes">✓</span></td>
+          </tr>
+
+          <tr class="section"><td colspan="4">For designers &amp; teams</td></tr>
+          <tr>
+            <td>Client project pages</td>
+            <td><span class="no">—</span></td>
+            <td><span class="no">—</span></td>
+            <td><span class="yes">✓</span></td>
+          </tr>
+          <tr>
+            <td>White-label exports</td>
+            <td><span class="no">—</span></td>
+            <td><span class="no">—</span></td>
+            <td><span class="yes">✓</span></td>
+          </tr>
+          <tr>
+            <td>Team workspaces &amp; SSO</td>
+            <td><span class="no">—</span></td>
+            <td><span class="no">—</span></td>
+            <td><span class="yes">✓</span></td>
+          </tr>
+          <tr>
+            <td>API access</td>
+            <td><span class="no">—</span></td>
+            <td><span class="no">—</span></td>
+            <td>2,000 calls/mo</td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ENTERPRISE -->
+    <div class="enterprise" data-reveal>
+      <div>
+        <h3>Enterprise</h3>
+        <p>For furniture retailers, real-estate platforms, and large agencies. Custom integrations, dedicated GPU capacity, volume API pricing, and on-prem deploy options.</p>
+      </div>
+      <a href="#" class="btn btn-ghost btn-lg" data-magnet="0.1">
+        Contact sales
+        <span class="btn-arrow">→</span>
+      </a>
+    </div>
+
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" id="faq">
+  <div class="container">
+    <header class="section-header" data-reveal>
+      <span class="eyebrow">FAQ</span>
+      <h2 class="display h2 text-grad">Money questions, answered.</h2>
+    </header>
+
+    <div class="faq" data-reveal>
+      <div class="faq-item">
+        <button class="faq-q">
+          Do you mark up the furniture I buy?
+          <span class="ico">+</span>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner">No. Ever. You pay the same price the retailer charges on their own site. We earn affiliate commissions from the retailers — same model as a coupon-code site — and those don't change what you pay.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">
+          What counts as one "restyle" on the Starter plan?
+          <span class="ico">+</span>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner">One photo + one style = one restyle, no matter how many revisions or variations you generate from it. So you can iterate inside the same render freely; only switching to a brand-new photo or style uses another credit.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">
+          Can I upgrade or downgrade anytime?
+          <span class="ico">+</span>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner">Yes. Upgrades take effect immediately and we prorate the difference. Downgrades take effect at the end of your billing period — you keep your features until then.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">
+          Do you offer student or non-profit discounts?
+          <span class="ico">+</span>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner">Yes. 50% off Pro for verified students, and free Studio for registered non-profits doing community-housing or shelter work. Email proof to hello@roomai.app and we'll switch you over within a day.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">
+          What payment methods do you accept?
+          <span class="ico">+</span>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner">All major credit cards, Apple Pay, Google Pay, and ACH for annual Studio plans. Furniture purchases support whatever the underlying retailer supports — including Klarna, Afterpay, and Affirm at most stores.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">
+          Is there a money-back guarantee?
+          <span class="ico">+</span>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner">Yes — first month full refund on any paid plan, no questions asked. Just email us. Returns on furniture follow each retailer's own policy, surfaced clearly before you check out.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-card" data-reveal>
+      <span class="eyebrow">Start free</span>
+      <h2 class="display h2 text-grad mt-24">Three free restyles. <br>Zero card details.</h2>
+      <p class="lead">Test it on the room that's been bugging you. Upgrade only if you love what comes back.</p>
+      <div class="hero-cta">
+        <a href="#" class="btn btn-primary btn-lg" data-magnet="0.18">Try it free <span class="btn-arrow">→</span></a>
+        <a href="how-it-works.html" class="btn btn-ghost btn-lg">How it works</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-mark">RoomAI</div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <a href="index.html" class="logo">
+          <span class="logo-mark"></span>
+          RoomAI
+        </a>
+        <p style="color: var(--text-dim); font-size: 14px; margin-top: 16px; max-width: 280px;">
+          The AI interior designer that actually ships the furniture.
+        </p>
+      </div>
+      <div class="footer-col">
+        <h5>Product</h5>
+        <ul>
+          <li><a href="how-it-works.html">How it works</a></li>
+          <li><a href="pricing.html">Pricing</a></li>
+          <li><a href="#">iOS app</a></li>
+          <li><a href="#">Android app</a></li>
+          <li><a href="#">For designers</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Company</h5>
+        <ul>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Press</a></li>
+          <li><a href="#">Careers</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Legal</h5>
+        <ul>
+          <li><a href="#">Privacy</a></li>
+          <li><a href="#">Terms</a></li>
+          <li><a href="#">Cookies</a></li>
+          <li><a href="#">DMCA</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 RoomAI Labs Inc.</span>
+      <span class="mono">Designed for makers. Built in Brooklyn.</span>
+    </div>
+  </div>
+</footer>
+
+</main>
+
+<script src="motion.js"></script>
+<script>
+  // ===== Billing toggle =====
+  const toggleBtns = document.querySelectorAll('#billingToggle button');
+  const pillActive = document.getElementById('pillActive');
+  const priceNums = document.querySelectorAll('[data-price-monthly]');
+  const billNotes = document.querySelectorAll('[data-bill-monthly]');
+
+  function setBilling(mode) {
+    toggleBtns.forEach((b) => b.classList.toggle('active', b.dataset.billing === mode));
+    const active = document.querySelector('#billingToggle button.active');
+    const rect = active.getBoundingClientRect();
+    const parentRect = active.parentElement.getBoundingClientRect();
+    pillActive.style.transform = `translateX(${rect.left - parentRect.left - 4}px)`;
+    pillActive.style.width = rect.width + 'px';
+
+    priceNums.forEach((el) => {
+      const from = parseFloat(el.textContent);
+      const to = parseFloat(mode === 'yearly' ? el.dataset.priceYearly : el.dataset.priceMonthly);
+      const start = performance.now();
+      const dur = 500;
+      function step(now) {
+        const t = Math.min(1, (now - start) / dur);
+        const eased = 1 - Math.pow(1 - t, 4);
+        const val = from + (to - from) * eased;
+        el.textContent = Math.round(val);
+        if (t < 1) requestAnimationFrame(step);
+        else el.textContent = to;
+      }
+      // animate scale briefly
+      el.style.transform = 'translateY(-4px)';
+      setTimeout(() => el.style.transform = '', 250);
+      requestAnimationFrame(step);
+    });
+    billNotes.forEach((el) => {
+      el.textContent = mode === 'yearly' ? el.dataset.billYearly : el.dataset.billMonthly;
+    });
+  }
+  toggleBtns.forEach((b) => b.addEventListener('click', () => setBilling(b.dataset.billing)));
+  // initial pill position
+  requestAnimationFrame(() => setBilling('monthly'));
+  window.addEventListener('resize', () => setBilling(document.querySelector('#billingToggle button.active').dataset.billing));
+
+  // ===== FAQ =====
+  document.querySelectorAll('.faq-q').forEach((q) => {
+    q.addEventListener('click', () => {
+      const item = q.parentElement;
+      const a = item.querySelector('.faq-a');
+      const open = item.classList.toggle('open');
+      a.style.maxHeight = open ? a.scrollHeight + 'px' : '0';
+    });
+  });
+</script>
+</body>
+</html>
