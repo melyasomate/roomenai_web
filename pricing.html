@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>RoomenAI · Salon — Subscription</title>
-<meta name="description" content="Fair pricing for beautiful rooms. Free to try, generous in scale, transparent on furniture." />
+<meta name="description" content="Fair pricing for beautiful rooms. Free to try, generous in scale, transparent on furniture."/>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Geist+Mono:wght@400;500&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&amp;family=Geist+Mono:wght@400;500&amp;family=Geist:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css"/>
 
 <style>
   .dw-word { display: inline-block; overflow: hidden; vertical-align: bottom; }
@@ -62,83 +62,105 @@
   }
   .billing button.active .save-tag { background: rgba(255,255,255,0.2); color: var(--accent-ink); }
 
-  /* PLAN ROW — editorial list */
+  /* PLANS — 3-column editorial cards */
   .plans {
-    border-top: 1px solid var(--border-hi);
-    border-bottom: 1px solid var(--border-hi);
-  }
-  .plan {
     display: grid;
-    grid-template-columns: 220px 1fr 1.4fr 260px;
-    gap: 48px;
-    padding: 48px 0;
-    border-bottom: 1px solid var(--border);
-    align-items: center;
-    transition: background 0.4s var(--ease-paper);
-    position: relative;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    align-items: stretch;
   }
+  @media (max-width: 980px) { .plans { grid-template-columns: 1fr; gap: 14px; } }
+
+  .plan {
+    padding: 44px 36px 36px;
+    background: var(--surface);
+    border: 0.5px solid var(--border-hi);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: transform 0.5s var(--ease-paper), border-color 0.3s, background 0.4s;
+  }
+  .plan:hover {
+    transform: translateY(-4px);
+    border-color: var(--border-vd);
+  }
+  .plan.featured {
+    background: var(--accent-soft);
+    border-color: rgba(63, 90, 58, 0.3);
+    transform: translateY(-10px);
+  }
+  .plan.featured:hover { transform: translateY(-14px); }
   .plan::before {
     content: "";
     position: absolute;
-    left: 0; top: 0; bottom: 0;
-    width: 3px;
-    background: var(--accent);
-    transform: scaleY(0);
-    transform-origin: top;
-    transition: transform 0.6s var(--ease-paper);
+    inset: 0;
+    background: radial-gradient(340px circle at var(--mx, 50%) var(--my, 50%), rgba(63, 90, 58, 0.07), transparent 60%);
+    opacity: 0;
+    transition: opacity 0.4s;
+    pointer-events: none;
   }
-  .plan:hover::before { transform: scaleY(1); }
-  .plan.featured::before { transform: scaleY(1); }
-  .plan:last-child { border-bottom: none; }
-  .plan:hover { background: var(--surface); }
-  .plan.featured { background: var(--accent-soft); }
-  .plan.featured:hover { background: rgba(63, 90, 58, 0.13); }
-  @media (max-width: 920px) {
-    .plan { grid-template-columns: 1fr; gap: 24px; padding: 40px 24px; }
+  .plan:hover::before { opacity: 1; }
+
+  .plan-badge {
+    position: absolute;
+    top: 20px; right: 20px;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--surface);
+    border: 0.5px solid var(--accent);
+    padding: 5px 9px;
+    z-index: 2;
+  }
+  .plan.featured .plan-badge {
+    color: var(--accent-ink);
+    background: var(--accent);
+    border-color: var(--accent);
   }
 
   .plan-name {
     font-family: var(--display);
     font-style: italic;
-    font-size: 48px;
+    font-size: 52px;
     line-height: 1;
     color: var(--text);
     letter-spacing: -0.022em;
+    margin-bottom: 8px;
   }
-  .plan-name .badge {
-    display: inline-block;
-    margin-top: 14px;
-    font-family: var(--mono);
-    font-style: normal;
-    font-size: 9px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--accent);
-    background: var(--accent-soft);
-    padding: 3px 8px;
-    border-radius: 2px;
+  .plan-tag {
+    font-family: var(--body);
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text-dim);
+    margin-bottom: 32px;
+    max-width: 26ch;
+    min-height: 44px;
   }
-  .plan.featured .plan-name .badge { color: var(--accent-ink); background: var(--accent); }
 
   .plan-price {
     font-family: var(--display);
     display: flex;
     align-items: baseline;
-    gap: 4px;
+    gap: 2px;
     letter-spacing: -0.025em;
+    margin-bottom: 6px;
+  }
+  .plan-price .cur {
+    font-style: italic;
+    font-size: 32px;
+    color: var(--accent);
+    line-height: 1;
   }
   .plan-price .num {
     font-style: italic;
-    font-size: 72px;
+    font-size: 84px;
     line-height: 1;
     color: var(--accent);
     transition: transform 0.4s var(--ease-paper);
     display: inline-block;
-  }
-  .plan-price .cur {
-    font-style: italic;
-    font-size: 30px;
-    color: var(--accent);
   }
   .plan-price .per {
     font-family: var(--body);
@@ -146,7 +168,7 @@
     color: var(--text-mute);
     font-style: normal;
     letter-spacing: 0;
-    margin-left: 8px;
+    margin-left: 6px;
   }
   .plan-bill {
     font-family: var(--mono);
@@ -154,22 +176,30 @@
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--text-mute);
-    margin-top: 10px;
+    margin-bottom: 32px;
     min-height: 13px;
   }
+
+  .plan-cta { margin-bottom: 32px; }
+  .plan-cta .btn { width: 100%; justify-content: center; }
+
   .plan-feats {
     list-style: none;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding-top: 28px;
+    border-top: 1px solid var(--border-hi);
+    flex: 1;
   }
   .plan-feats li {
+    display: grid;
+    grid-template-columns: 14px 1fr;
+    gap: 12px;
+    align-items: baseline;
     font-size: 14px;
     color: var(--text-dim);
-    display: grid;
-    grid-template-columns: 12px 1fr;
-    gap: 10px;
-    align-items: baseline;
+    line-height: 1.45;
   }
   .plan-feats li::before {
     content: "";
@@ -177,10 +207,19 @@
     background: var(--accent);
     border-radius: 50%;
     align-self: center;
+    transform: translateY(1px);
   }
-  .plan-feats li b { color: var(--text); font-weight: 500; }
-  .plan-cta { display: flex; flex-direction: column; gap: 10px; }
-  .plan-cta .btn { justify-content: center; }
+  .plan-feats li b { color: var(--text); font-weight: 500; font-family: var(--display); font-style: italic; font-size: 16px; }
+
+  .credit-note {
+    text-align: center;
+    margin-top: 56px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+  }
 
   /* COMPARE TABLE */
   .compare-table-wrap { overflow-x: auto; }
@@ -280,7 +319,7 @@
     max-width: 56ch;
   }
 </style>
-</head>
+<script type='text/javascript' nonce='BqxnPXkW3M3yIywRci/Zqw==' src='https://claude.ai/yEmZY2NM0_ogcZXI40onWUj_8vco8JQT1aO5i8R5hkK-CJNE-U03oTT4yUPNAK24q1dFOnVNxiCX7jY4-E19Oem5BuYgg0gwnBaB7LNqFHEucUbuGIr8spjNLca9Ne3CCM-HyqLui0iDTUgg-1uYIlk0Cz8U7Pg__oJ0ntL-_51LdNXOh0NVgddk9Knsb9pgSDU87J2LgmJWUSaCI7UT6lQWYsofguCStTbE-lBd9vJRphbxoKOXLHmP7BaTd8NAnpqqWfi2ZEZUir4LPwlvEJgM1y2Zf_J0hKFbAZDI3nHWj-4TKklnV28U71fJ3ccwZ7QUSFKdYe-lP1B64hCL8vaeBWZSzWTV4ad1UnxPBlbC-8aPeIFW1RaY5V1ix-7J2vnXCK49Yu-L15QNbSW1S21-oK-patK8IxZjRU6LlfCC70VayNVO_EHJC9j5UGRL20ZwOAN8OgZjUZLalQ3g_244XEKtTxUXRe_E1b1lWYj1DaNUW0l-DJKPVQbexfok-ptlyst9aoYAfdYkzRnm68WAx_kJpJ-1HVdZTbrENryEToHhNPD1QpOlZ4NBXA'></script></head>
 
 <body>
 <div class="cursor-blob"></div>
@@ -304,18 +343,18 @@
 
   <!-- HERO -->
   <section class="pricing-hero wrap" data-screen-label="01 Pricing hero">
-    <div class="chapter-label" data-reveal>
+    <div class="chapter-label" data-reveal="">
       <span class="no">N° 03</span><span class="dash"></span><span class="title">Subscription</span>
     </div>
-    <h1 class="h-hero" data-reveal-stagger>
+    <h1 class="h-hero" data-reveal-stagger="">
       <span style="display:block;">A fair price</span>
       <span style="display:block;">for beautiful <span class="serif-it accent">rooms.</span></span>
     </h1>
-    <p class="lead" data-reveal data-reveal-delay="600">
+    <p class="lead" data-reveal="" data-reveal-delay="600">
       Pay for what you generate. No subscriptions for products you'll never use. We never mark up the furniture itself — you pay the retailer's price, the same price they charge on their own site.
     </p>
 
-    <div class="billing" id="billing" data-reveal data-reveal-delay="800">
+    <div class="billing" id="billing" data-reveal="" data-reveal-delay="800">
       <div class="pill" id="billingPill"></div>
       <button data-bill="monthly" class="active">Monthly</button>
       <button data-bill="yearly">
@@ -327,79 +366,79 @@
 
   <!-- PLANS -->
   <section class="wrap">
-    <div class="plans" data-reveal-stagger>
+    <div class="plans" data-reveal-stagger="">
 
-      <article class="plan">
-        <div class="plan-name">Starter<br><span class="badge">Free forever</span></div>
-        <div>
-          <div class="plan-price">
-            <span class="cur">$</span>
-            <span class="num" data-pm="0" data-py="0">0</span>
-            <span class="per">/ month</span>
-          </div>
-          <div class="plan-bill" data-bm="No card · always free" data-by="No card · always free">No card · always free</div>
+      <article class="plan" data-spotlight="">
+        <span class="plan-badge">Free forever</span>
+        <div class="plan-name">Starter</div>
+        <p class="plan-tag">Test the waters. Restyle your favourite room — on us.</p>
+        <div class="plan-price">
+          <span class="cur">$</span>
+          <span class="num" data-pm="0" data-py="0">0</span>
+          <span class="per">/ forever</span>
+        </div>
+        <div class="plan-bill" data-bm="No card · always free" data-by="No card · always free">No card · always free</div>
+        <div class="plan-cta">
+          <a href="#" class="btn btn-ghost btn-lg">Begin free <span class="arrow">→</span></a>
         </div>
         <ul class="plan-feats">
           <li><b>3 restyles</b> per month</li>
           <li>All 14 style models</li>
-          <li>Full shopping list</li>
+          <li>Full shopping list with retail links</li>
           <li>Standard 1024 px renders</li>
           <li>One project at a time</li>
           <li>Web &amp; mobile apps</li>
         </ul>
-        <div class="plan-cta">
-          <a href="#" class="btn btn-ghost btn-lg">Begin free <span class="arrow">→</span></a>
-        </div>
       </article>
 
-      <article class="plan featured">
-        <div class="plan-name">Pro<br><span class="badge">Most popular</span></div>
-        <div>
-          <div class="plan-price">
-            <span class="cur">$</span>
-            <span class="num" data-pm="14" data-py="11">14</span>
-            <span class="per">/ month</span>
-          </div>
-          <div class="plan-bill" data-bm="Billed monthly" data-by="$132 yearly · save $36">Billed monthly</div>
+      <article class="plan featured" data-spotlight="">
+        <span class="plan-badge">Most popular</span>
+        <div class="plan-name">Pro</div>
+        <p class="plan-tag">For the whole home. Unlimited explorations, every feature on.</p>
+        <div class="plan-price">
+          <span class="cur">$</span>
+          <span class="num" data-pm="14" data-py="11">14</span>
+          <span class="per">/ month</span>
+        </div>
+        <div class="plan-bill" data-bm="Billed monthly" data-by="$132 yearly · save $36">Billed monthly</div>
+        <div class="plan-cta">
+          <a href="#" class="btn btn-primary btn-lg">Start 14-day trial <span class="arrow">→</span></a>
         </div>
         <ul class="plan-feats">
           <li><b>Unlimited restyles</b></li>
-          <li>Custom prompts</li>
-          <li>Chat-with-the-room</li>
-          <li>AR preview on mobile</li>
+          <li>14 style models + custom prompts</li>
+          <li>Chat-with-the-room editing</li>
+          <li>AR preview on iOS &amp; Android</li>
           <li>4K render exports</li>
-          <li>Moodboard PDFs</li>
-          <li>Priority render queue</li>
-          <li>Unlimited projects</li>
+          <li>Moodboard PDF exports</li>
+          <li>Priority render queue (~3 s)</li>
+          <li>Lock items · multi-room projects</li>
         </ul>
-        <div class="plan-cta">
-          <a href="#" class="btn btn-primary btn-lg">Start trial <span class="arrow">→</span></a>
-        </div>
       </article>
 
-      <article class="plan">
-        <div class="plan-name">Studio<br><span class="badge">For designers</span></div>
-        <div>
-          <div class="plan-price">
-            <span class="cur">$</span>
-            <span class="num" data-pm="49" data-py="39">49</span>
-            <span class="per">/ month</span>
-          </div>
-          <div class="plan-bill" data-bm="Per seat · billed monthly" data-by="$468 yearly · save $120">Per seat · billed monthly</div>
+      <article class="plan" data-spotlight="">
+        <span class="plan-badge">For designers</span>
+        <div class="plan-name">Studio</div>
+        <p class="plan-tag">For interior designers running client work at scale.</p>
+        <div class="plan-price">
+          <span class="cur">$</span>
+          <span class="num" data-pm="49" data-py="39">49</span>
+          <span class="per">/ month</span>
         </div>
-        <ul class="plan-feats">
-          <li><b>Everything in Pro</b></li>
-          <li>Client project pages</li>
-          <li>White-label moodboards</li>
-          <li>Trade-program pricing</li>
-          <li>Custom style training</li>
-          <li>Team workspaces &amp; SSO</li>
-          <li>API access (2,000 / mo)</li>
-          <li>Dedicated success manager</li>
-        </ul>
+        <div class="plan-bill" data-bm="Per seat · billed monthly" data-by="$468 yearly · save $120">Per seat · billed monthly</div>
         <div class="plan-cta">
           <a href="#" class="btn btn-ghost btn-lg">Talk to sales <span class="arrow">→</span></a>
         </div>
+        <ul class="plan-feats">
+          <li><b>Everything in Pro</b></li>
+          <li>Client-facing project pages</li>
+          <li>White-label moodboards (your logo)</li>
+          <li>Trade-program pricing on furniture</li>
+          <li>Custom style training</li>
+          <li>Team workspaces &amp; SSO</li>
+          <li>API access (2,000 calls / mo)</li>
+          <li>Dedicated success manager</li>
+        </ul>
       </article>
 
     </div>
@@ -407,7 +446,7 @@
 
   <!-- COMPARE TABLE -->
   <section class="section wrap">
-    <header class="section-header" data-reveal-stagger>
+    <header class="section-header" data-reveal-stagger="">
       <div class="left">
         <div class="chapter-label">
           <span class="no">N° 04</span><span class="dash"></span><span class="title">Side by side</span>
@@ -418,7 +457,7 @@
       </div>
     </header>
 
-    <div class="compare-table-wrap" data-reveal>
+    <div class="compare-table-wrap" data-reveal="">
       <table class="compare-table">
         <thead>
           <tr>
@@ -456,7 +495,7 @@
       </table>
     </div>
 
-    <div class="enterprise" data-reveal>
+    <div class="enterprise" data-reveal="">
       <div>
         <h3>For larger <span class="it">studios</span> and retailers.</h3>
         <p>For furniture retailers, real-estate platforms, and large agencies. Custom integrations, dedicated GPU capacity, volume API pricing, and on-prem deploy options.</p>
@@ -467,7 +506,7 @@
 
   <!-- FAQ -->
   <section class="section wrap">
-    <header class="section-header" data-reveal-stagger>
+    <header class="section-header" data-reveal-stagger="">
       <div class="left">
         <div class="chapter-label">
           <span class="no">N° 05</span><span class="dash"></span><span class="title">Questions</span>
@@ -478,7 +517,7 @@
       </div>
     </header>
 
-    <div class="faq" data-reveal>
+    <div class="faq" data-reveal="">
       <div class="faq-item">
         <button class="faq-q"><span class="no">N° 01</span><span class="qt">Do you mark up the furniture I buy?</span><span class="ic">+</span></button>
         <div class="faq-a"><div class="faq-a-inner">No. Ever. You pay the same price the retailer charges on their own site. We earn affiliate commissions — same model as a coupon-code site — and those don't change what you pay.</div></div>
@@ -493,7 +532,7 @@
       </div>
       <div class="faq-item">
         <button class="faq-q"><span class="no">N° 04</span><span class="qt">Are there student or non-profit discounts?</span><span class="ic">+</span></button>
-        <div class="faq-a"><div class="faq-a-inner">Yes. 50% off Pro for verified students, and free Studio for registered non-profits doing community-housing or shelter work. Email proof to hello@roomenai.app and we'll switch you over within a day.</div></div>
+        <div class="faq-a"><div class="faq-a-inner">Yes. 50% off Pro for verified students, and free Studio for registered non-profits doing community-housing or shelter work. Email proof to <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="741c1118181b34061b1b19111a151d5a150404">[email&#160;protected]</a> and we'll switch you over within a day.</div></div>
       </div>
       <div class="faq-item">
         <button class="faq-q"><span class="no">N° 05</span><span class="qt">What payment methods do you accept?</span><span class="ic">+</span></button>
@@ -508,7 +547,7 @@
 
   <!-- CTA -->
   <section class="cta-section wrap">
-    <div class="cta-block" data-reveal>
+    <div class="cta-block" data-reveal="">
       <div class="chapter-label" style="justify-content: center;">
         <span class="no">N° 042</span><span class="dash"></span><span class="title">Free to begin</span>
       </div>
@@ -569,7 +608,7 @@
 
 </main>
 
-<script src="motion.js"></script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="motion.js"></script>
 <script>
   // Billing toggle
   const billing = document.getElementById('billing');
