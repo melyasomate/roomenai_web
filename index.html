@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>RoomenAI · Salon — Design any room. Shop it.</title>
+<meta name="description" content="An editorial AI room designer. Photograph a space, choose a direction, shop every piece."/>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&amp;family=Geist+Mono:wght@400;500&amp;family=Geist:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css"/>
+
+<style>
+  /* ============================================================
+     data-words helper
+     ============================================================ */
+  .dw-word { display: inline-block; overflow: hidden; vertical-align: bottom; }
+  .dw-word > .dw-inner {
+    display: inline-block;
+    transform: translateY(110%);
+    transition: transform 1.1s var(--ease-paper);
+    will-change: transform;
+  }
+  .dw-word.in > .dw-inner { transform: translateY(0); }
+
+  /* ============================================================
+     HERO — editorial split with interactive style morph
+     ============================================================ */
+  .hero { padding-top: 40px; padding-bottom: 100px; position: relative; }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.1fr;
+    gap: 60px;
+    align-items: end;
+  }
+  @media (max-width: 1020px) { .hero-grid { grid-template-columns: 1fr; gap: 48px; } }
+
+  .hero-copy { padding-bottom: 20px; }
+  .hero-stamp { margin-bottom: 40px; }
+  .hero-h1 { margin-bottom: 32px; }
+  .hero-lead { margin-bottom: 40px; max-width: 36ch; }
+  .hero-cta { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+  .hero-meta {
+    margin-top: 56px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    padding-top: 28px;
+    border-top: 1px solid var(--border-hi);
+    max-width: 540px;
+  }
+  .hero-meta .item .v {
+    font-family: var(--display);
+    font-style: italic;
+    font-size: 36px;
+    line-height: 1;
+    color: var(--text);
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+  }
+  .hero-meta .item .l {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+  }
+
+  /* ---------- MacBook visual ---------- */
+  .mac-wrap { position: relative; perspective: 1600px; }
+  .mac-frame {
+    position: relative;
+    aspect-ratio: 4/3;
+    background: #1a1a1a;
+    border-radius: 14px 14px 6px 6px;
+    overflow: hidden;
+    box-shadow:
+      0 50px 100px -40px rgba(30, 22, 12, 0.35),
+      0 20px 40px -20px rgba(30, 22, 12, 0.22),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(0,0,0,0.4);
+    transition: transform 0.5s var(--ease-paper);
+  }
+  .mac-wrap::after {
+    content: "";
+    position: absolute;
+    left: -4%; right: -4%;
+    bottom: -14px;
+    height: 14px;
+    background: linear-gradient(180deg, #2a2724, #1a1815);
+    border: 1px solid rgba(0,0,0,0.4);
+    border-radius: 2px 2px 10px 10px;
+    box-shadow: 0 16px 32px -10px rgba(30,22,12,0.3);
+  }
+  .mac-wrap::before {
+    content: "";
+    position: absolute;
+    left: 40%; right: 40%;
+    bottom: -3px;
+    height: 5px;
+    background: #383532;
+    border-radius: 0 0 6px 6px;
+    z-index: 5;
+  }
+
+  .mac-top {
+    height: 36px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 14px;
+    background: #232220;
+    border-bottom: 1px solid rgba(0,0,0,0.5);
+  }
+  .mac-top .dot { width: 11px; height: 11px; border-radius: 50%; }
+  .mac-top .dot:nth-child(1) { background: #FF5F57; }
+  .mac-top .dot:nth-child(2) { background: #FEBC2E; }
+  .mac-top .dot:nth-child(3) { background: #28C840; }
+  .mac-top .url {
+    margin-left: 22px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: rgba(245,241,228,0.55);
+    flex: 1;
+    text-align: center;
+    padding-right: 60px;
+    letter-spacing: 0.04em;
+  }
+
+  /* Scene area */
+  .mac-scene {
+    position: absolute;
+    inset: 36px 0 0 0;
+    overflow: hidden;
+  }
+  .scene-bg {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 1.4s var(--ease-paper);
+  }
+  .scene-bg.on { opacity: 1; }
+  /* gradient backdrops per style */
+  .scene-bg[data-scene-bg="scandi"] {
+    background:
+      radial-gradient(70% 50% at 30% 30%, rgba(241,234,211,0.5), transparent 70%),
+      linear-gradient(135deg, #C9B797 0%, #B89B7A 55%, #876B4D 100%);
+  }
+  .scene-bg[data-scene-bg="moss"] {
+    background:
+      radial-gradient(70% 50% at 60% 35%, rgba(180,200,170,0.45), transparent 70%),
+      linear-gradient(135deg, #B5BFA0 0%, #909E7B 55%, #5E6B4A 100%);
+  }
+  .scene-bg[data-scene-bg="terra"] {
+    background:
+      radial-gradient(70% 50% at 40% 30%, rgba(220,160,120,0.45), transparent 70%),
+      linear-gradient(135deg, #C7906E 0%, #A8765C 55%, #76503B 100%);
+  }
+  .scene-bg[data-scene-bg="boho"] {
+    background:
+      radial-gradient(70% 50% at 50% 40%, rgba(200,160,130,0.5), transparent 70%),
+      linear-gradient(135deg, #C9A77E 0%, #A88260 55%, #75573A 100%);
+  }
+  .scene-bg::before {
+    content: "";
+    position: absolute; inset: 0;
+    background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.45) 100%);
+  }
+  /* room marks: window + floor + furniture silhouettes */
+  .scene-window {
+    position: absolute;
+    top: 12%; left: 10%;
+    width: 26%; height: 40%;
+    border: 1.5px solid rgba(245,241,228,0.5);
+    background: linear-gradient(180deg, rgba(245,241,228,0.32), rgba(245,241,228,0.06));
+  }
+  .scene-window::after {
+    content: "";
+    position: absolute; top: 0; left: 50%;
+    width: 1.5px; height: 100%;
+    background: rgba(245,241,228,0.4);
+  }
+  .scene-floor {
+    position: absolute;
+    inset: 60% 0 0 0;
+    border-top: 1px solid rgba(0,0,0,0.18);
+    background: linear-gradient(180deg, rgba(0,0,0,0.08), rgba(0,0,0,0.18));
+  }
+  .scene-furn {
+    position: absolute;
+    border: 1.5px solid rgba(245,241,228,0.55);
+    background: rgba(30,22,12,0.18);
+    backdrop-filter: blur(2px);
+  }
+  .sf-sofa  { left: 22%; top: 58%; width: 38%; height: 18%; }
+  .sf-table { left: 30%; top: 80%; width: 16%; height: 7%; }
+  .sf-art   { right: 12%; top: 18%; width: 18%; height: 20%; }
+  .sf-lamp  { right: 5%;  top: 46%; width: 5%;  height: 38%; }
+
+  /* SVG dashed connectors */
+  .scene-svg { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
+  .scene-svg .ln { stroke: rgba(245,241,228,0.55); stroke-width: 0.8; stroke-dasharray: 3 5; fill: none; stroke-linecap: round; animation: scene-dash 30s linear infinite; }
+  .scene-svg .pt { fill: var(--accent); filter: drop-shadow(0 0 4px rgba(63, 90, 58, 0.7)); }
+  @keyframes scene-dash { to { stroke-dashoffset: -120; } }
+
+  /* Floating product tags */
+  .scene-tag {
+    position: absolute;
+    z-index: 3;
+    background: rgba(241, 234, 211, 0.96);
+    backdrop-filter: blur(8px);
+    border: 0.5px solid var(--border-hi);
+    padding: 9px 14px 9px 11px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 100px;
+    animation: drift 7s ease-in-out infinite;
+    box-shadow: 0 8px 24px -8px rgba(30,22,12,0.25);
+  }
+  .scene-tag-pip {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    position: relative;
+    flex-shrink: 0;
+  }
+  .scene-tag-pip::after {
+    content: "";
+    position: absolute; inset: -4px;
+    border-radius: 50%;
+    border: 1px solid var(--accent);
+    opacity: 0.4;
+    animation: ring 2.6s ease-out infinite;
+  }
+  @keyframes ring { 0% { transform: scale(0.6); opacity: 0.6; } 100% { transform: scale(2); opacity: 0; } }
+  .scene-tag .nm { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text); }
+  .scene-tag .pr { font-family: var(--display); font-style: italic; font-size: 14px; color: var(--accent); letter-spacing: -0.01em; }
+  @keyframes drift { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+
+  .scene-tag.t1 { top: 18%; right: -3%; animation-delay: -1s; }
+  .scene-tag.t2 { top: 52%; left: -5%;  animation-delay: -3s; }
+  .scene-tag.t3 { bottom: 16%; right: -2%; animation-delay: -5s; }
+  @media (max-width: 1020px) {
+    .scene-tag.t1 { right: 4%; top: 14%; }
+    .scene-tag.t2 { left: 4%;  top: 48%; }
+    .scene-tag.t3 { right: 4%; bottom: 14%; }
+  }
+
+  /* Scene caption strip */
+  .scene-cap {
+    margin-top: 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 24px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border-hi);
+  }
+  .scene-cap .ttl {
+    font-family: var(--display);
+    font-style: italic;
+    font-size: 26px;
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    color: var(--accent);
+  }
+  .scene-cap .ttl em { font-style: italic; }
+  .scene-cap .sub-1 {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+    text-align: right;
+  }
+  .scene-cap .sub-2 {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    text-align: right;
+    margin-top: 4px;
+  }
+
+  /* Style chips */
+  .scene-chips {
+    display: flex;
+    gap: 8px;
+    margin-top: 22px;
+    flex-wrap: wrap;
+  }
+  .scene-chip {
+    padding: 9px 18px;
+    border-radius: 999px;
+    border: 0.5px solid var(--border-hi);
+    background: transparent;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+    cursor: pointer;
+    transition: all 0.4s var(--ease-paper);
+    position: relative;
+  }
+  .scene-chip:hover { color: var(--text); border-color: var(--border-vd); }
+  .scene-chip.on {
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-color: var(--accent);
+  }
+
+  /* ============================================================
+     COMPARE (Before / After)
+     ============================================================ */
+  .compare-shell {
+    position: relative;
+    aspect-ratio: 16/10;
+    max-width: 1180px;
+    margin: 0 auto;
+    overflow: hidden;
+    --cmp: 50%;
+    user-select: none;
+    background: var(--surface-2);
+  }
+  .cmp-pane { position: absolute; inset: 0; }
+  .cmp-before {
+    background:
+      radial-gradient(80% 60% at 35% 35%, rgba(180, 150, 110, 0.5), transparent 70%),
+      linear-gradient(135deg, #C9B797 0%, #B89B7A 55%, #876B4D 100%);
+  }
+  .cmp-after {
+    background:
+      radial-gradient(80% 60% at 60% 40%, rgba(140, 165, 130, 0.5), transparent 70%),
+      linear-gradient(135deg, #B5BFA0 0%, #909E7B 55%, #5E6B4A 100%);
+    clip-path: inset(0 calc(100% - var(--cmp)) 0 0);
+  }
+  .cmp-deco { position: absolute; inset: 0; pointer-events: none; }
+  .cmp-deco::before, .cmp-deco::after { content: ""; position: absolute; background: rgba(0, 0, 0, 0.18); }
+  .cmp-deco::before { left: 30%; top: 0; bottom: 0; width: 1px; }
+  .cmp-deco::after  { left: 0; right: 0; top: 62%; height: 1px; }
+  .cmp-furn {
+    position: absolute;
+    border: 1.5px solid rgba(255, 255, 255, 0.4);
+    background: rgba(0, 0, 0, 0.18);
+    backdrop-filter: blur(2px);
+  }
+  .cmp-after .cmp-furn {
+    border-color: rgba(245, 241, 228, 0.7);
+    background: rgba(245, 241, 228, 0.10);
+  }
+  .cmp-furn .ftag {
+    position: absolute;
+    bottom: 6px; left: 8px;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.85);
+  }
+  .cmp-after .cmp-furn .ftag { color: rgba(245, 241, 228, 0.9); }
+  .f-sofa  { left: 16%; top: 54%; width: 40%; height: 22%; }
+  .f-table { left: 28%; top: 80%; width: 18%; height: 8%; }
+  .f-rug   { left: 12%; top: 78%; width: 52%; height: 14%; }
+  .f-art   { right: 14%; top: 22%; width: 16%; height: 22%; }
+  .f-lamp  { right: 6%;  top: 50%; width: 6%;  height: 34%; }
+
+  .cmp-label {
+    position: absolute;
+    top: 24px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.88);
+    background: rgba(0, 0, 0, 0.22);
+    padding: 6px 12px;
+    backdrop-filter: blur(8px);
+    z-index: 3;
+  }
+  .cmp-label-b { left: 24px; }
+  .cmp-label-a { right: 24px; color: rgba(245, 241, 228, 0.95); }
+  .cmp-handle {
+    position: absolute;
+    top: 0; bottom: 0;
+    left: var(--cmp);
+    width: 2px;
+    background: rgba(245, 241, 228, 0.96);
+    cursor: ew-resize;
+    transform: translateX(-50%);
+    z-index: 5;
+  }
+  .cmp-handle::before {
+    content: "";
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 5px rgba(245, 241, 228, 0.4), 0 12px 32px rgba(63, 90, 58, 0.35);
+  }
+  .cmp-handle::after {
+    content: "⇄";
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--accent-ink);
+    font-family: var(--display);
+    font-style: italic;
+    font-size: 22px;
+    z-index: 1;
+  }
+  .cmp-price {
+    position: absolute; top: 50%;
+    left: var(--cmp);
+    transform: translate(28px, -50%);
+    z-index: 4;
+    font-family: var(--display);
+    font-style: italic;
+    font-size: 26px;
+    color: #fff;
+    letter-spacing: -0.015em;
+    text-shadow: 0 1px 14px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+  }
+  .cmp-price .lab {
+    display: block;
+    font-family: var(--mono);
+    font-style: normal;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.8);
+    margin-top: 2px;
+  }
+
+  /* ============================================================
+     PROCESS — 3 cols
+     ============================================================ */
+  .process {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-top: 1px solid var(--border-hi);
+  }
+  @media (max-width: 880px) { .process { grid-template-columns: 1fr; } }
+  .process-col {
+    padding: 40px 32px 32px;
+    border-right: 1px solid var(--border-hi);
+    position: relative;
+    transition: background 0.5s var(--ease-paper);
+  }
+  .process-col:last-child { border-right: none; }
+  @media (max-width: 880px) {
+    .process-col { border-right: none; border-bottom: 1px solid var(--border-hi); }
+    .process-col:last-child { border-bottom: none; }
+  }
+  .process-col::before {
+    content: "";
+    position: absolute; inset: 0;
+    background: radial-gradient(400px circle at var(--mx, 50%) var(--my, 50%), rgba(63, 90, 58, 0.08), transparent 60%);
+    opacity: 0; transition: opacity 0.45s;
+    pointer-events: none;
+  }
+  .process-col:hover::before { opacity: 1; }
+  .process-no {
+    font-family: var(--display);
+    font-style: italic;
+    font-size: 76px;
+    line-height: 1;
+    color: var(--accent);
+    margin-bottom: 28px;
+    letter-spacing: -0.02em;
+    transition: transform 0.6s var(--ease-paper);
+  }
+  .process-col:hover .process-no { transform: translateX(4px) scale(1.04); }
+  .process-name { font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-mute); margin-bottom: 16px; }
+  .process-title { font-family: var(--display); font-size: 32px; line-height: 1.05; letter-spacing: -0.015em; margin-bottom: 14px; max-width: 12ch; }
+  .process-body { color: var(--text-dim); font-size: 14px; line-height: 1.55; max-width: 32ch; }
+
+  /* ============================================================
+     CHAT DEMO
+     ============================================================ */
+  .chat-split {
+    display: grid;
+    grid-template-columns: 1fr 1.1fr;
+    gap: 80px;
+    align-items: center;
+  }
+  @media (max-width: 920px) { .chat-split { grid-template-columns: 1fr; gap: 40px; } }
+
+  .chat-copy h3 {
+    font-family: var(--display);
+    font-size: clamp(32px, 4vw, 56px);
+    line-height: 1.0;
+    letter-spacing: -0.02em;
+    margin-bottom: 22px;
+    max-width: 18ch;
+  }
+  .chat-copy h3 .it { font-style: italic; color: var(--accent); }
+  .chat-copy p { color: var(--text-dim); max-width: 42ch; margin-bottom: 28px; font-size: 16px; line-height: 1.6; }
+  .chat-copy ul {
+    list-style: none;
+    display: flex; flex-direction: column; gap: 14px;
+    padding-top: 22px; border-top: 1px solid var(--border-hi);
+  }
+  .chat-copy li {
+    display: grid; grid-template-columns: 36px 1fr;
+    align-items: baseline; gap: 14px;
+    color: var(--text-dim); font-size: 14px;
+  }
+  .chat-copy li .ck {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em;
+    color: var(--accent);
+  }
+  .chat-copy li b { color: var(--text); font-weight: 500; }
+
+  .chat-window {
+    background: var(--surface);
+    border: 0.5px solid var(--border-hi);
+    border-radius: 18px;
+    padding: 24px;
+    height: 460px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    scroll-behavior: smooth;
+    position: relative;
+  }
+  .chat-window::-webkit-scrollbar { width: 0; }
+  .chat-window .chat-head {
+    padding: 0 2px 14px;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+    display: flex; justify-content: space-between;
+  }
+  .chat-window .chat-head .pip {
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .chat-window .chat-head .pip::before {
+    content: ""; width: 6px; height: 6px;
+    border-radius: 50%; background: var(--accent);
+    box-shadow: 0 0 0 3px rgba(63,90,58,0.18);
+  }
+  .chat-bubble {
+    padding: 14px 18px;
+    border-radius: 18px;
+    font-size: 15px;
+    line-height: 1.4;
+    max-width: 80%;
+    font-style: italic;
+    font-family: var(--display);
+    font-size: 19px;
+    animation: bubblein 0.4s var(--ease-paper) both;
+  }
+  @keyframes bubblein { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .chat-bubble.them {
+    background: var(--surface-hi);
+    color: var(--text);
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+  }
+  .chat-bubble.you {
+    background: var(--accent);
+    color: var(--accent-ink);
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+  }
+  .chat-bubble.them.typing {
+    display: inline-flex; gap: 5px;
+    align-items: center;
+    padding: 16px 20px;
+  }
+  .chat-bubble.them.typing span {
+    width: 6px; height: 6px;
+    background: var(--text-mute);
+    border-radius: 50%;
+    animation: dot 1.4s ease-in-out infinite;
+  }
+  .chat-bubble.them.typing span:nth-child(2) { animation-delay: 0.2s; }
+  .chat-bubble.them.typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes dot {
+    0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+    30%           { opacity: 1;   transform: translateY(-3px); }
+  }
+
+  /* ============================================================
+     BUDGET — interactive slider with item reveals
+     ============================================================ */
+  .budget-split {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+  @media (max-width: 920px) { .budget-split { grid-template-columns: 1fr; gap: 48px; } }
+  .budget-copy h3 {
+    font-family: var(--display);
+    font-size: clamp(32px, 4vw, 56px);
+    line-height: 1.0;
+    letter-spacing: -0.02em;
+    margin-bottom: 22px;
+    max-width: 16ch;
+  }
+  .budget-copy h3 .it { font-style: italic; color: var(--accent); }
+  .budget-copy p { color: var(--text-dim); max-width: 42ch; margin-bottom: 28px; font-size: 16px; line-height: 1.6; }
+  .budget-panel {
+    background: var(--surface);
+    border: 0.5px solid var(--border-hi);
+    padding: 36px;
+    border-radius: 6px;
+  }
+  .budget-number {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .budget-number [data-budget-num] {
+    font-family: var(--display);
+    font-style: italic;
+    font-size: clamp(72px, 8vw, 110px);
+    line-height: 1;
+    color: var(--accent);
+    letter-spacing: -0.035em;
+    display: block;
+  }
+  .budget-number .lab {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+    margin-top: 10px;
+  }
+  .b-track {
+    position: relative;
+    height: 4px;
+    background: var(--border-hi);
+    border-radius: 2px;
+    cursor: pointer;
+    margin-bottom: 14px;
+  }
+  .b-fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.25s var(--ease-paper);
+  }
+  .b-knob {
+    position: absolute;
+    left: 0; top: 50%;
+    width: 22px; height: 22px;
+    margin-left: -11px;
+    margin-top: -11px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 3px solid var(--surface);
+    box-shadow: 0 0 0 1px var(--accent), 0 4px 12px rgba(63,90,58,0.25);
+    cursor: grab;
+    transition: left 0.25s var(--ease-paper);
+  }
+  .b-knob:active { cursor: grabbing; }
+  .b-labels {
+    display: flex; justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+    margin-bottom: 32px;
+  }
+  .b-list {
+    border-top: 1px solid var(--border-hi);
+    padding-top: 22px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .b-list .head {
+    display: flex; justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+    margin-bottom: 10px;
+  }
+  .b-item {
+    display: grid;
+    grid-template-columns: 28px 1fr auto;
+    gap: 14px;
+    align-items: center;
+    padding: 8px 0;
+    opacity: 0.3;
+    filter: blur(0);
+    transition: opacity 0.4s var(--ease-paper), filter 0.4s var(--ease-paper), transform 0.4s var(--ease-paper);
+  }
+  .b-item.on { opacity: 1; }
+  .b-item.on .b-swatch::after { opacity: 1; }
+  .b-item .b-swatch {
+    width: 28px; height: 28px;
+    border-radius: 4px;
+    background: linear-gradient(135deg, #C9B797, #876B4D);
+    position: relative;
+    overflow: hidden;
+  }
+  .b-item .b-swatch::after {
+    content: "✓";
+    position: absolute; inset: 0;
+    display: grid; place-items: center;
+    color: #fff; font-size: 14px;
+    background: var(--accent);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .b-item .b-nm { font-family: var(--display); font-style: italic; font-size: 19px; color: var(--text); letter-spacing: -0.01em; }
+  .b-item .b-pr { font-family: var(--display); font-style: italic; font-size: 19px; color: var(--accent); letter-spacing: -0.01em; }
+
+  /* ============================================================
+     GALLERY
+     ============================================================ */
+  .gallery {
+    display: grid;
+    grid-template-columns: 5fr 4fr 3fr;
+    gap: 20px;
+  }
+  @media (max-width: 920px) {
+    .gallery { grid-template-columns: 1fr 1fr; }
+    .gallery-1, .gallery-4 { grid-column: span 2; }
+  }
+  .g-card {
+    position: relative;
+    overflow: hidden;
+    background: var(--surface-2);
+    cursor: pointer;
+    transform-style: preserve-3d;
+  }
+  .g-card .g-img {
+    width: 100%; height: 100%;
+    position: absolute; inset: 0;
+    transition: transform 1.4s var(--ease-paper);
+  }
+  .g-card:hover .g-img { transform: scale(1.04); }
+  .gallery-1 { aspect-ratio: 5/6; }
+  .gallery-1 .g-img { background: linear-gradient(135deg, #C9B797 0%, #A89274 55%, #876B4D 100%); }
+  .gallery-2 { aspect-ratio: 4/5; }
+  .gallery-2 .g-img { background: linear-gradient(135deg, #B8C0B5 0%, #94A092 55%, #5F7263 100%); }
+  .gallery-3 { aspect-ratio: 3/5; }
+  .gallery-3 .g-img { background: linear-gradient(135deg, #E2D5BA 0%, #C5B392 55%, #9D8460 100%); }
+  .gallery-4 { aspect-ratio: 4/5; }
+  .gallery-4 .g-img { background: linear-gradient(135deg, #B89880 0%, #997862 55%, #6E513E 100%); }
+  .gallery-5 { aspect-ratio: 5/6; }
+  .gallery-5 .g-img { background: linear-gradient(135deg, #B5BFA0 0%, #909E7B 55%, #5E6B4A 100%); }
+  .gallery-6 { aspect-ratio: 3/4; }
+  .gallery-6 .g-img { background: linear-gradient(135deg, #C9B797 0%, #B89B7A 55%, #876B4D 100%); }
+  .g-img::before, .g-img::after { content: ""; position: absolute; background: rgba(0,0,0,0.3); opacity: 0.22; }
+  .g-img::before { left: 30%; top: 0; bottom: 0; width: 1px; }
+  .g-img::after  { left: 0; right: 0; top: 62%; height: 1px; }
+
+  .g-info {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 18px 20px;
+    z-index: 2;
+    background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+    color: #fff;
+    display: flex; justify-content: space-between; align-items: flex-end; gap: 16px;
+    transition: transform 0.6s var(--ease-paper);
+  }
+  .g-card:hover .g-info { transform: translateY(-4px); }
+  .g-info .ttl { font-family: var(--display); font-style: italic; font-size: 24px; line-height: 1.05; letter-spacing: -0.015em; text-shadow: 0 1px 12px rgba(0,0,0,0.4); }
+  .g-info .stl { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.78); margin-top: 4px; }
+  .g-info .pr  { font-family: var(--display); font-style: italic; font-size: 20px; color: #fff; text-shadow: 0 1px 12px rgba(0,0,0,0.4); letter-spacing: -0.01em; white-space: nowrap; }
+  .g-info .pr-sub { font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.65); text-align: right; margin-top: 4px; }
+  .g-stamp {
+    position: absolute;
+    top: 14px; left: 14px;
+    font-family: var(--mono); font-size: 9.5px;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: rgba(255,255,255,0.85);
+    z-index: 2;
+    background: rgba(0,0,0,0.22);
+    padding: 4px 8px;
+    backdrop-filter: blur(8px);
+  }
+
+  /* PULL QUOTE */
+  .pull-quote {
+    padding: 100px 0;
+    text-align: center;
+    position: relative;
+  }
+  .pull-quote::before, .pull-quote::after {
+    content: ""; position: absolute;
+    left: 50%; transform: translateX(-50%);
+    width: 60px; height: 1px;
+    background: var(--accent);
+  }
+  .pull-quote::before { top: 30px; }
+  .pull-quote::after  { bottom: 30px; }
+  .pull-quote .q {
+    font-family: var(--display);
+    font-size: clamp(32px, 4.5vw, 60px);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    max-width: 22ch;
+    margin: 0 auto 32px;
+    color: var(--text);
+  }
+  .pull-quote .att {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+  }
+  .pull-quote .att .nm { color: var(--text); }
+</style>
+<script type='text/javascript' nonce='6rzBvMGcjSTdl+wJi9mnVQ==' src='https://claude.ai/O1SXUmIwWTTF2FADovpw3cQC7_uga9wZlFaqoq6qCKGtrMjmkFIX81HxP2YlO9LDARyCEvhcPJ89EYL-I3qjWXQ4qYpF-eNmia-bRWs6sg4vL1ClH9XGHYZJTPapJuaOmW7BOVu56qESUE0VPcrDj4UblCPyb3DhBWzI3S23y-JuWQgrla3U9W8lBfcgqQiw1BxxpsUafdCdXWhhGLoWNkJyK2JDH-11agYAMm7A-JGAXJuGbXF9BI4uHK164Hvdahe4zgJ0mhNFvvlWYzVEdVDma_SvtIoZhjIA_45rjt7rlF4ALhBRnv7lvNZyUJfMKsr9o9dyek9bieBU1bPPnax-rTWbk6lszAk7b4BqLgzyMpjBwo-VdWq2XwV0jfKy00aalU4JJpNoSNzuo4qEjMH2aWss_7mYElRPFluJyJePOJ-5ytYIva1juWbcP72jx7Vif-sfiMEVj3JAjJi7FrmgVbM4bEBEbm6opZuh2Rzlzn1Ns76NO7GhdhTUu4OUnGZYVifxTQk7znL3scol8nlTeEUvNihwn149eXWDUG47D7XLBN8wq7Ihwac'></script></head>
+
+<body>
+<div class="cursor-blob"></div>
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="index.html" class="wordmark">Roomen<span class="ai">ai</span></a>
+  <div class="nav-links">
+    <a href="index.html" class="nav-link active">Index</a>
+    <a href="how-it-works.html" class="nav-link">How it works</a>
+    <a href="pricing.html" class="nav-link">Subscription</a>
+    <a href="#gallery" class="nav-link">Gallery</a>
+  </div>
+  <div class="nav-right">
+    <a href="../index.html" class="nav-link" style="opacity:0.55;">Classic view</a>
+    <a href="#" class="btn btn-primary btn-sm">Begin <span class="arrow">→</span></a>
+  </div>
+</nav>
+
+<main>
+
+  <!-- ============================================================
+       HERO
+       ============================================================ -->
+  <section class="hero wrap" data-screen-label="01 Hero">
+    <div class="hero-grid">
+
+      <div class="hero-copy">
+        <div class="hero-stamp stamp" data-reveal="">
+          <span class="pip"></span>
+          N° 042 — ISSUE 04 · NEW THIS WEEK
+        </div>
+
+        <h1 class="hero-h1 h-hero" data-reveal-stagger="">
+          <span style="display:block;">Design</span>
+          <span style="display:block;">any room.</span>
+          <span style="display:block;"><span class="it">Shop</span> it.</span>
+        </h1>
+
+        <p class="hero-lead lead" data-reveal="" data-reveal-delay="600">
+          Photograph the space you have. Choose a direction. RoomenAI restyles your room and finds every piece on Amazon and Etsy — shipped to your door, on your budget.
+        </p>
+
+        <div class="hero-cta" data-reveal="" data-reveal-delay="800">
+          <a href="#" class="btn btn-primary btn-lg">Begin a new room <span class="arrow">→</span></a>
+          <a href="how-it-works.html" class="btn-text">How it works</a>
+        </div>
+
+        <div class="hero-meta" data-stagger="">
+          <div class="item">
+            <div class="v" data-count="2.4" data-decimals="1" data-suffix="m">0</div>
+            <div class="l">Rooms designed</div>
+          </div>
+          <div class="item">
+            <div class="v" data-count="4200" data-suffix="+">0</div>
+            <div class="l">Stores indexed</div>
+          </div>
+          <div class="item">
+            <div class="v" data-count="4.9" data-decimals="1">0</div>
+            <div class="l">App Store rating</div>
+          </div>
+        </div>
+      </div>
+
+      <div data-reveal="" data-reveal-delay="400" data-parallax="0.05">
+        <div class="mac-wrap">
+          <div class="mac-frame" data-tilt="2.5">
+            <div class="mac-top">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="url">roomenai.app  /  living-room  ·  restyled</span>
+            </div>
+            <div class="mac-scene" data-scene-room="">
+              <div class="scene-bg on" data-scene-bg="scandi"></div>
+              <div class="scene-bg" data-scene-bg="moss"></div>
+              <div class="scene-bg" data-scene-bg="terra"></div>
+              <div class="scene-bg" data-scene-bg="boho"></div>
+
+              <div class="scene-window"></div>
+              <div class="scene-floor"></div>
+              <div class="scene-furn sf-sofa"></div>
+              <div class="scene-furn sf-table"></div>
+              <div class="scene-furn sf-art"></div>
+              <div class="scene-furn sf-lamp"></div>
+
+              <svg class="scene-svg" viewbox="0 0 1000 700" preserveaspectratio="none" aria-hidden="true">
+                <path class="ln" d="M 700 200 Q 800 280 880 340"/>
+                <path class="ln" d="M 280 450 Q 200 380 130 320"/>
+                <path class="ln" d="M 720 460 Q 820 400 900 340"/>
+                <circle class="pt" cx="700" cy="200" r="3"/>
+                <circle class="pt" cx="280" cy="450" r="3"/>
+                <circle class="pt" cx="720" cy="460" r="3"/>
+              </svg>
+
+              <div class="scene-tag t1">
+                <span class="scene-tag-pip"></span>
+                <span class="nm">Linen Sofa</span>
+                <span class="pr">$849</span>
+              </div>
+              <div class="scene-tag t2">
+                <span class="scene-tag-pip"></span>
+                <span class="nm">Wool Rug 8×10</span>
+                <span class="pr">$284</span>
+              </div>
+              <div class="scene-tag t3">
+                <span class="scene-tag-pip"></span>
+                <span class="nm">Oak Floor Lamp</span>
+                <span class="pr">$129</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="scene-cap">
+            <div class="ttl"><em>Scandinavian</em></div>
+            <div>
+              <div class="sub-1">Six pieces · $1,488</div>
+              <div class="sub-2">Linen sofa · oak floor lamp</div>
+            </div>
+          </div>
+
+          <div class="scene-chips">
+            <button class="scene-chip on" data-scene-chip="scandi">Scandi</button>
+            <button class="scene-chip" data-scene-chip="moss">Moss</button>
+            <button class="scene-chip" data-scene-chip="terra">Terra</button>
+            <button class="scene-chip" data-scene-chip="boho">Boho</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============================================================
+       MARQUEE
+       ============================================================ -->
+  <section class="marquee-band">
+    <div class="marquee-lab" data-reveal="">Sourcing from 4,200 retailers · including</div>
+    <div class="marquee">
+      <span class="marquee-item">Amazon</span><span class="marquee-item dot"></span>
+      <span class="marquee-item">Etsy</span><span class="marquee-item dot"></span>
+      <span class="marquee-item">West Elm</span><span class="marquee-item dot"></span>
+      <span class="marquee-item">CB2</span><span class="marquee-item dot"></span>
+      <span class="marquee-item">Article</span><span class="marquee-item dot"></span>
+      <span class="marquee-item">IKEA</span><span class="marquee-item dot"></span>
+      <span class="marquee-item">Anthropologie</span><span class="marquee-item dot"></span>
+      <span class="marquee-item">Crate &amp; Barrel</span><span class="marquee-item dot"></span>
+      <span class="marquee-item">Wayfair</span><span class="marquee-item dot"></span>
+      <span class="marquee-item">Target</span><span class="marquee-item dot"></span>
+      <span class="marquee-item">Amazon</span><span class="marquee-item dot"></span>
+      <span class="marquee-item">Etsy</span><span class="marquee-item dot"></span>
+      <span class="marquee-item">West Elm</span><span class="marquee-item dot"></span>
+      <span class="marquee-item">CB2</span><span class="marquee-item dot"></span>
+      <span class="marquee-item">Article</span><span class="marquee-item dot"></span>
+      <span class="marquee-item">IKEA</span><span class="marquee-item dot"></span>
+      <span class="marquee-item">Anthropologie</span><span class="marquee-item dot"></span>
+      <span class="marquee-item">Crate &amp; Barrel</span><span class="marquee-item dot"></span>
+      <span class="marquee-item">Wayfair</span><span class="marquee-item dot"></span>
+      <span class="marquee-item">Target</span><span class="marquee-item dot"></span>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       BEFORE / AFTER
+       ============================================================ -->
+  <section class="section wrap" data-screen-label="02 Before · After">
+    <header class="section-header" data-reveal-stagger="">
+      <div class="left">
+        <div class="chapter-label">
+          <span class="no">N° 00</span><span class="dash"></span><span class="title">Before · After</span>
+        </div>
+      </div>
+      <div class="right">
+        <h2 class="h-2">Your room, <span class="serif-it accent">restyled in seven seconds.</span></h2>
+        <p class="lead" style="margin-top: 24px;">Drag to compare. Every restyle keeps the geometry of your room — windows, doors, ceilings — and swaps in furniture you can buy today.</p>
+      </div>
+    </header>
+
+    <div class="compare-shell" data-compare="" data-reveal-img="">
+      <div class="cmp-pane cmp-before">
+        <div class="cmp-deco"></div>
+        <span class="cmp-label cmp-label-b">Before</span>
+        <div class="cmp-furn f-rug"></div>
+        <div class="cmp-furn f-sofa"><span class="ftag">old sofa</span></div>
+        <div class="cmp-furn f-table"><span class="ftag">table</span></div>
+        <div class="cmp-furn f-art"><span class="ftag">art</span></div>
+        <div class="cmp-furn f-lamp"></div>
+      </div>
+      <div class="cmp-pane cmp-after">
+        <div class="cmp-deco"></div>
+        <span class="cmp-label cmp-label-a">After · Scandinavian</span>
+        <div class="cmp-furn f-rug"></div>
+        <div class="cmp-furn f-sofa"><span class="ftag">linen sofa · $849</span></div>
+        <div class="cmp-furn f-table"><span class="ftag">oak table · $264</span></div>
+        <div class="cmp-furn f-art"><span class="ftag">framed print · $76</span></div>
+        <div class="cmp-furn f-lamp"></div>
+      </div>
+      <div class="cmp-price"><span>$1,488</span><span class="lab">six pieces</span></div>
+      <div class="cmp-handle"></div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       PROCESS
+       ============================================================ -->
+  <section class="section wrap" data-screen-label="03 Process">
+    <header class="section-header" data-reveal-stagger="">
+      <div class="left">
+        <div class="chapter-label">
+          <span class="no">N° 01</span><span class="dash"></span><span class="title">The process</span>
+        </div>
+      </div>
+      <div class="right">
+        <h2 class="h-2">From snapshot to checkout, <span class="serif-it accent">in three moves.</span></h2>
+      </div>
+    </header>
+
+    <div class="process" data-reveal-stagger="">
+      <div class="process-col">
+        <div class="process-no" data-reveal-line=""><span class="line-inner">01</span></div>
+        <div class="process-name">Photograph</div>
+        <div class="process-title">A single <span class="it">wide shot.</span></div>
+        <div class="process-body">Open the app, frame your room, tap. The geometry model maps walls, windows and light in three seconds.</div>
+      </div>
+      <div class="process-col">
+        <div class="process-no" data-reveal-line=""><span class="line-inner">02</span></div>
+        <div class="process-name">Restyle</div>
+        <div class="process-title">Pick a <span class="it">direction.</span></div>
+        <div class="process-body">Fourteen curated styles — or describe one in plain English. Six versions back in seven seconds.</div>
+      </div>
+      <div class="process-col">
+        <div class="process-no" data-reveal-line=""><span class="line-inner">03</span></div>
+        <div class="process-name">Shop</div>
+        <div class="process-title">Buy what's in <span class="it">the picture.</span></div>
+        <div class="process-body">Every piece links to Amazon and Etsy with stock verified and shipping to your zip already checked.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       CHAT-WITH-THE-ROOM (live typing)
+       ============================================================ -->
+  <section class="section wrap" data-screen-label="04 Chat">
+    <header class="section-header" data-reveal-stagger="">
+      <div class="left">
+        <div class="chapter-label">
+          <span class="no">N° 02</span><span class="dash"></span><span class="title">Conversation</span>
+        </div>
+      </div>
+      <div class="right">
+        <h2 class="h-2">Chat <span class="serif-it accent">with</span> the room.</h2>
+      </div>
+    </header>
+
+    <div class="chat-split">
+      <div class="chat-copy" data-reveal="">
+        <h3>Direct it like a <span class="it">colleague.</span></h3>
+        <p>Don't like the sofa colour? Want a darker rug? Need a reading nook by the window? Type it. The room rerenders in three seconds, and the shopping list updates automatically.</p>
+        <ul>
+          <li><span class="ck">→</span> <span><b>Plain-English commands</b> — "Less beige", "Make the sofa green"</span></li>
+          <li><span class="ck">→</span> <span><b>Lock items you love</b> — keep your real sofa, change everything around it</span></li>
+          <li><span class="ck">→</span> <span><b>Undo, redo, branch</b> — every state is saved</span></li>
+        </ul>
+      </div>
+
+      <div class="chat-window" data-chat="" data-reveal-img="">
+        <div class="chat-head">
+          <span class="pip">Live conversation · Living room</span>
+          <span>just now</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       BUDGET — interactive slider
+       ============================================================ -->
+  <section class="section wrap" data-screen-label="05 Budget">
+    <header class="section-header" data-reveal-stagger="">
+      <div class="left">
+        <div class="chapter-label">
+          <span class="no">N° 03</span><span class="dash"></span><span class="title">The budget</span>
+        </div>
+      </div>
+      <div class="right">
+        <h2 class="h-2">Spend <span class="serif-it accent">what you have.</span> Not a pound more.</h2>
+      </div>
+    </header>
+
+    <div class="budget-split">
+      <div class="budget-copy" data-reveal="">
+        <h3>Drag — the <span class="it">room rewrites itself.</span></h3>
+        <p>Set your budget anywhere from $300 to $6,000. RoomenAI rewrites the entire product list to fit — swapping splurges for dupes that look the part. Same retailers, same return policies, average 38% savings.</p>
+        <p style="margin-bottom: 0; max-width: 36ch;"><em style="font-family: var(--display); font-style: italic; color: var(--accent); font-size: 22px; letter-spacing: -0.01em;">"Set it to $1,500 and it found dupes for everything I'd seen on Pinterest at three times the price."</em></p>
+      </div>
+
+      <div class="budget-panel" data-budget="" data-min="300" data-max="6000" data-start="1500" data-reveal-img="">
+        <div class="budget-number">
+          <span data-budget-num="">$1,500</span>
+          <div class="lab"><span data-budget-pieces="">5 pieces</span> · ships in 4 days</div>
+        </div>
+
+        <div class="b-track">
+          <div class="b-fill"></div>
+          <div class="b-knob"></div>
+        </div>
+        <div class="b-labels">
+          <span>$300</span>
+          <span>$1,500</span>
+          <span>$6,000</span>
+        </div>
+
+        <div class="b-list">
+          <div class="head"><span>Cart so far</span><span>retail</span></div>
+
+          <div class="b-item" data-threshold="400">
+            <div class="b-swatch" style="background: linear-gradient(135deg, #C9B797, #876B4D);"></div>
+            <div class="b-nm">Linen throw cushion</div>
+            <div class="b-pr">$38</div>
+          </div>
+          <div class="b-item" data-threshold="700">
+            <div class="b-swatch" style="background: linear-gradient(135deg, #D4C4A8, #A88A66);"></div>
+            <div class="b-nm">Brass sconce</div>
+            <div class="b-pr">$89</div>
+          </div>
+          <div class="b-item" data-threshold="1100">
+            <div class="b-swatch" style="background: linear-gradient(135deg, #B8C0B5, #5F7263);"></div>
+            <div class="b-nm">Wool rug, 8 × 10</div>
+            <div class="b-pr">$284</div>
+          </div>
+          <div class="b-item" data-threshold="1500">
+            <div class="b-swatch" style="background: linear-gradient(135deg, #B89880, #6E513E);"></div>
+            <div class="b-nm">Oak floor lamp</div>
+            <div class="b-pr">$129</div>
+          </div>
+          <div class="b-item" data-threshold="2200">
+            <div class="b-swatch" style="background: linear-gradient(135deg, #C9B797, #876B4D);"></div>
+            <div class="b-nm">Linen sofa, sand</div>
+            <div class="b-pr">$849</div>
+          </div>
+          <div class="b-item" data-threshold="3000">
+            <div class="b-swatch" style="background: linear-gradient(135deg, #B5BFA0, #5E6B4A);"></div>
+            <div class="b-nm">Travertine coffee table</div>
+            <div class="b-pr">$612</div>
+          </div>
+          <div class="b-item" data-threshold="4500">
+            <div class="b-swatch" style="background: linear-gradient(135deg, #E2D5BA, #9D8460);"></div>
+            <div class="b-nm">Boucle accent chair</div>
+            <div class="b-pr">$384</div>
+          </div>
+          <div class="b-item" data-threshold="5500">
+            <div class="b-swatch" style="background: linear-gradient(135deg, #B8C0B5, #5F7263);"></div>
+            <div class="b-nm">Vintage Berber rug</div>
+            <div class="b-pr">$910</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       GALLERY
+       ============================================================ -->
+  <section class="section wrap" id="gallery" data-screen-label="06 Gallery">
+    <header class="section-header" data-reveal-stagger="">
+      <div class="left">
+        <div class="chapter-label">
+          <span class="no">N° 04</span><span class="dash"></span><span class="title">A gallery</span>
+        </div>
+      </div>
+      <div class="right">
+        <h2 class="h-2">Six rooms, <span class="serif-it accent">six afternoons.</span></h2>
+        <p class="lead" style="margin-top: 24px;">A small sample of what subscribers redesigned this week — and the cart total for each.</p>
+      </div>
+    </header>
+
+    <div class="gallery" data-reveal-stagger="">
+      <a class="g-card gallery-1" data-tilt="3">
+        <span class="g-stamp">N° 042</span>
+        <div class="g-img"></div>
+        <div class="g-info">
+          <div>
+            <div class="ttl">A room that <span class="serif-it">arrives.</span></div>
+            <div class="stl">Living · Scandinavian</div>
+          </div>
+          <div><div class="pr">$1,488</div><div class="pr-sub">6 pieces</div></div>
+        </div>
+      </a>
+      <a class="g-card gallery-2" data-tilt="3">
+        <span class="g-stamp">N° 056</span>
+        <div class="g-img"></div>
+        <div class="g-info">
+          <div>
+            <div class="ttl">Garden <span class="serif-it">interior.</span></div>
+            <div class="stl">Bedroom · Wabi-sabi</div>
+          </div>
+          <div><div class="pr">$1,142</div><div class="pr-sub">8 pieces</div></div>
+        </div>
+      </a>
+      <a class="g-card gallery-3" data-tilt="3">
+        <span class="g-stamp">N° 071</span>
+        <div class="g-img"></div>
+        <div class="g-info">
+          <div>
+            <div class="ttl">Quiet <span class="serif-it">desk.</span></div>
+            <div class="stl">Office · Minimal</div>
+          </div>
+          <div><div class="pr">$712</div><div class="pr-sub">5 pieces</div></div>
+        </div>
+      </a>
+      <a class="g-card gallery-4" data-tilt="3">
+        <span class="g-stamp">N° 088</span>
+        <div class="g-img"></div>
+        <div class="g-info">
+          <div>
+            <div class="ttl">Earth <span class="serif-it">tones.</span></div>
+            <div class="stl">Living · Boho</div>
+          </div>
+          <div><div class="pr">$1,786</div><div class="pr-sub">9 pieces</div></div>
+        </div>
+      </a>
+      <a class="g-card gallery-5" data-tilt="3">
+        <span class="g-stamp">N° 102</span>
+        <div class="g-img"></div>
+        <div class="g-info">
+          <div>
+            <div class="ttl">Moss &amp; <span class="serif-it">marble.</span></div>
+            <div class="stl">Kitchen · Modern</div>
+          </div>
+          <div><div class="pr">$2,504</div><div class="pr-sub">11 pieces</div></div>
+        </div>
+      </a>
+      <a class="g-card gallery-6" data-tilt="3">
+        <span class="g-stamp">N° 117</span>
+        <div class="g-img"></div>
+        <div class="g-info">
+          <div>
+            <div class="ttl">A reading <span class="serif-it">nook.</span></div>
+            <div class="stl">Living · Cottagecore</div>
+          </div>
+          <div><div class="pr">$587</div><div class="pr-sub">4 pieces</div></div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- PULL QUOTE -->
+  <section class="wrap wrap-narrow">
+    <div class="pull-quote" data-reveal="">
+      <div class="q">
+        "I'd been staring at the same beige living room for four years. RoomenAI gave me six new versions in a coffee break <span class="it">— then I bought the one I liked.</span>"
+      </div>
+      <div class="att"><span class="nm">Maya K.</span> · Brooklyn, NY · Subscriber since 2025</div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section wrap">
+    <div class="cta-block" data-reveal="">
+      <div class="chapter-label" style="justify-content: center;">
+        <span class="no">N° 042</span><span class="dash"></span><span class="title">Free to begin</span>
+      </div>
+      <h2 class="h-1">Photograph the room <span class="serif-it accent">that's been bugging you.</span></h2>
+      <p class="lead">Three free restyles. No card required. Upgrade only if you fall in love with what comes back.</p>
+      <div class="row">
+        <a href="#" class="btn btn-primary btn-lg">Begin a new room <span class="arrow">→</span></a>
+        <a href="pricing.html" class="btn btn-ghost btn-lg">See subscription</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot-wordmark" aria-hidden="true">Roomen<span class="it">ai</span></div>
+
+  <!-- FOOTER -->
+  <footer class="foot">
+    <div class="wrap">
+      <div class="foot-top">
+        <div>
+          <a href="index.html" class="wordmark">Roomen<span class="ai">ai</span></a>
+          <div class="blurb">A designer <span class="it">in your pocket.</span> Plus checkout.</div>
+        </div>
+        <div>
+          <h6>Product</h6>
+          <ul>
+            <li><a href="how-it-works.html">How it works</a></li>
+            <li><a href="pricing.html">Subscription</a></li>
+            <li><a href="#">iOS app</a></li>
+            <li><a href="#">Android app</a></li>
+            <li><a href="#">For designers</a></li>
+          </ul>
+        </div>
+        <div>
+          <h6>Company</h6>
+          <ul>
+            <li><a href="#">About</a></li>
+            <li><a href="#">Journal</a></li>
+            <li><a href="#">Press</a></li>
+            <li><a href="#">Careers</a></li>
+          </ul>
+        </div>
+        <div>
+          <h6>Legal</h6>
+          <ul>
+            <li><a href="#">Privacy</a></li>
+            <li><a href="#">Terms</a></li>
+            <li><a href="#">Cookies</a></li>
+            <li><a href="#">DMCA</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="foot-bottom">
+        <span>© 2026 RoomenAI Labs Inc.</span>
+        <span>Salon edition · Issue 04</span>
+      </div>
+    </div>
+  </footer>
+
+</main>
+
+<script src="motion.js"></script>
+</body>
+</html>

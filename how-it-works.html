@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RoomenAI · Salon — How it works</title>
+<meta name="description" content="From snapshot to checkout — how RoomenAI turns a phone photo into a buy-able room." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Geist+Mono:wght@400;500&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+
+<style>
+  .dw-word { display: inline-block; overflow: hidden; vertical-align: bottom; }
+  .dw-word > .dw-inner { display: inline-block; transform: translateY(110%); transition: transform 1.1s var(--ease-paper); }
+  .dw-word.in > .dw-inner { transform: translateY(0); }
+
+  /* CHAPTER TIMELINE */
+  .chapters-rail { position: relative; }
+  .chapters-rail::before {
+    content: "";
+    position: absolute;
+    left: 39px; top: 0; bottom: 0;
+    width: 1px;
+    background: var(--border-hi);
+    z-index: 0;
+  }
+  .chapters-rail .rail-fill {
+    position: absolute;
+    left: 39px; top: 0;
+    width: 1px;
+    background: var(--accent);
+    height: 0;
+    transition: height 0.1s linear;
+    box-shadow: 0 0 8px rgba(63, 90, 58, 0.4);
+    z-index: 1;
+  }
+  @media (max-width: 920px) { .chapters-rail::before, .chapters-rail .rail-fill { display: none; } }
+
+  .chapter {
+    display: grid;
+    grid-template-columns: 80px 1fr 1fr;
+    gap: 40px;
+    padding: 100px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: start;
+    position: relative;
+  }
+  .chapter:last-child { border-bottom: none; }
+  @media (max-width: 920px) { .chapter { grid-template-columns: 1fr; gap: 32px; padding: 60px 0; } }
+
+  .chapter-no {
+    font-family: var(--display);
+    font-style: italic;
+    font-size: 80px;
+    line-height: 1;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+    position: sticky;
+    top: 120px;
+  }
+  .chapter-no::before {
+    content: "";
+    position: absolute;
+    left: -3px; top: 22px;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 1.5px solid var(--border-hi);
+    transition: background 0.4s, border-color 0.4s, transform 0.4s, box-shadow 0.4s;
+    z-index: 2;
+  }
+  .chapter.is-current .chapter-no::before {
+    background: var(--accent);
+    border-color: var(--accent);
+    transform: scale(1.2);
+    box-shadow: 0 0 0 6px var(--bg), 0 0 16px rgba(63, 90, 58, 0.4);
+  }
+  @media (max-width: 920px) {
+    .chapter-no { position: static; font-size: 60px; }
+    .chapter-no::before { display: none; }
+  }
+
+  .chapter-text .lab {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 18px;
+    display: block;
+  }
+  .chapter-text h3 {
+    font-family: var(--display);
+    font-size: clamp(36px, 4.4vw, 64px);
+    line-height: 1.0;
+    letter-spacing: -0.025em;
+    margin-bottom: 20px;
+    max-width: 14ch;
+  }
+  .chapter-text h3 .it { font-style: italic; color: var(--accent); }
+  .chapter-text p {
+    color: var(--text-dim);
+    font-size: 16px; line-height: 1.6;
+    margin-bottom: 22px;
+    max-width: 42ch;
+  }
+  .chapter-text .marks {
+    display: flex; flex-direction: column; gap: 10px;
+    padding-top: 22px;
+    border-top: 1px solid var(--border);
+  }
+  .chapter-text .marks .mk {
+    display: grid; grid-template-columns: 40px 1fr;
+    gap: 14px;
+    font-size: 13px; color: var(--text-dim);
+    align-items: center;
+  }
+  .chapter-text .marks .mk .ck {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    color: var(--accent);
+  }
+
+  .chapter-vis {
+    aspect-ratio: 4/5;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.5s var(--ease-paper);
+    transform-style: preserve-3d;
+  }
+
+  /* ---- CV1: phone scanning ---- */
+  .cv-1 {
+    background:
+      radial-gradient(80% 60% at 50% 70%, rgba(63,90,58,0.15), transparent 70%),
+      linear-gradient(135deg, #E2D5BA 0%, #C5B392 55%, #9D8460 100%);
+  }
+  .cv-stamp, .cv-stamp-r {
+    position: absolute;
+    top: 16px;
+    font-family: var(--mono);
+    font-size: 9.5px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.8);
+    z-index: 2;
+    background: rgba(0,0,0,0.22);
+    padding: 4px 8px;
+    backdrop-filter: blur(8px);
+  }
+  .cv-stamp   { left: 16px; }
+  .cv-stamp-r { right: 16px; }
+
+  .phone-frame {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 42%;
+    aspect-ratio: 9/19;
+    border: 3px solid rgba(245, 241, 228, 0.85);
+    border-radius: 32px;
+    background: linear-gradient(135deg, rgba(0,0,0,0.4), rgba(0,0,0,0.2));
+    overflow: hidden;
+    box-shadow: 0 30px 60px -20px rgba(30,22,12,0.4);
+  }
+  .phone-frame::before {
+    content: ""; position: absolute;
+    top: 12px; left: 50%;
+    transform: translateX(-50%);
+    width: 56px; height: 6px;
+    background: rgba(0,0,0,0.55);
+    border-radius: 999px;
+    z-index: 3;
+  }
+  .phone-window {
+    position: absolute;
+    inset: 26px 10px 50px;
+    border-radius: 12px;
+    background:
+      linear-gradient(180deg, rgba(245,241,228,0.2), rgba(245,241,228,0.04)),
+      repeating-linear-gradient(135deg, rgba(245,241,228,0.06) 0 6px, transparent 6px 12px);
+    overflow: hidden;
+  }
+  .phone-target {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 70%; height: 55%;
+    border: 1.5px solid rgba(245,241,228,0.85);
+    border-radius: 2px;
+  }
+  .phone-target::before, .phone-target::after,
+  .phone-target > span:nth-child(1), .phone-target > span:nth-child(2) {
+    content: ""; position: absolute;
+    width: 14px; height: 14px;
+    border: 2px solid #fff;
+  }
+  .phone-target::before { top: -2px; left: -2px; border-right: none; border-bottom: none; }
+  .phone-target::after  { top: -2px; right: -2px; border-left: none; border-bottom: none; }
+  .phone-target span:nth-child(1) { bottom: -2px; left: -2px; border-right: none; border-top: none; }
+  .phone-target span:nth-child(2) { bottom: -2px; right: -2px; border-left: none; border-top: none; }
+  .scan-line {
+    position: absolute;
+    left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(245,241,228,0.95), transparent);
+    box-shadow: 0 0 12px rgba(245,241,228,0.6);
+    animation: scanY 2.6s ease-in-out infinite;
+  }
+  @keyframes scanY {
+    0%, 100% { top: 10%; opacity: 0; }
+    50%      { top: 90%; opacity: 1; }
+  }
+
+  /* ---- CV2: style picker ---- */
+  .cv-2 { background: var(--surface); padding: 32px; }
+  .styles-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    height: 100%;
+    align-content: center;
+  }
+  .styles-grid .st {
+    aspect-ratio: 1;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.5s var(--ease-paper);
+  }
+  .styles-grid .st::before {
+    content: "";
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.4), transparent 60%);
+  }
+  .styles-grid .st .lab {
+    position: absolute;
+    bottom: 14px; left: 14px;
+    font-family: var(--display);
+    font-style: italic;
+    color: #fff;
+    font-size: 24px;
+    z-index: 2;
+    text-shadow: 0 1px 10px rgba(0,0,0,0.4);
+  }
+  .styles-grid .st.s1 { background: linear-gradient(135deg, #C9B797, #876B4D); }
+  .styles-grid .st.s2 { background: linear-gradient(135deg, #B8C0B5, #5F7263); }
+  .styles-grid .st.s3 { background: linear-gradient(135deg, #B89880, #6E513E); }
+  .styles-grid .st.s4 { background: linear-gradient(135deg, #B5BFA0, #5E6B4A); }
+  .styles-grid .st.active {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+  }
+  .styles-grid .st.active::after {
+    content: "✓";
+    position: absolute;
+    top: 12px; right: 12px;
+    width: 26px; height: 26px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-radius: 50%;
+    display: grid; place-items: center;
+    font-size: 13px;
+    z-index: 2;
+  }
+
+  /* ---- CV3: tags floating ---- */
+  .cv-3 {
+    background: linear-gradient(135deg, #B8C0B5 0%, #909E7B 55%, #5F7263 100%);
+  }
+  .cv-3::before {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(to bottom, transparent 55%, rgba(0,0,0,0.3) 100%);
+  }
+  .cv-3 .floor {
+    position: absolute; inset: 60% 0 0 0;
+    border-top: 1px solid rgba(0,0,0,0.18);
+    background: linear-gradient(180deg, rgba(0,0,0,0.06), rgba(0,0,0,0.12));
+  }
+  .cv-tag {
+    position: absolute;
+    z-index: 3;
+    background: rgba(241, 234, 211, 0.96);
+    border: 0.5px solid var(--border-hi);
+    padding: 7px 13px 7px 10px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    border-radius: 999px;
+    animation: drift 7s ease-in-out infinite;
+    box-shadow: 0 6px 16px -4px rgba(30,22,12,0.3);
+  }
+  .cv-tag .pip {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    position: relative;
+    flex-shrink: 0;
+  }
+  .cv-tag .pip::after {
+    content: ""; position: absolute;
+    inset: -3px; border-radius: 50%;
+    border: 1px solid var(--accent);
+    opacity: 0.4;
+    animation: ring 2.6s ease-out infinite;
+  }
+  @keyframes ring { 0% { transform: scale(0.6); opacity: 0.6; } 100% { transform: scale(2); opacity: 0; } }
+  .cv-tag .nm {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+  .cv-tag .pr {
+    font-family: var(--display);
+    font-style: italic;
+    font-size: 14px;
+    color: var(--accent);
+    letter-spacing: -0.01em;
+  }
+  @keyframes drift { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+
+  /* ---- CV4: cart ---- */
+  .cv-4 { background: var(--surface); padding: 32px; }
+  .cv-cart { display: flex; flex-direction: column; gap: 8px; justify-content: center; height: 100%; }
+  .cv-cart .row {
+    display: grid;
+    grid-template-columns: 32px 1fr auto;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--surface-2);
+    border: 0.5px solid var(--border);
+    align-items: center;
+  }
+  .cv-cart .row .sw {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, #C9B797, #876B4D);
+  }
+  .cv-cart .row .nm {
+    font-family: var(--display);
+    font-style: italic;
+    font-size: 17px;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  .cv-cart .row .src {
+    font-family: var(--mono);
+    font-size: 8.5px;
+    letter-spacing: 0.16em;
+    color: var(--text-mute);
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+  .cv-cart .row .pr {
+    font-family: var(--display);
+    font-style: italic;
+    font-size: 18px;
+    color: var(--accent);
+  }
+  .cv-cart .total {
+    margin-top: 8px;
+    padding: 14px;
+    background: var(--accent-soft);
+    border: 0.5px solid rgba(63, 90, 58, 0.25);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .cv-cart .total .l {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+  }
+  .cv-cart .total .v {
+    font-family: var(--display);
+    font-style: italic;
+    font-size: 26px;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+  }
+
+  /* TECH GRID */
+  .tech-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    border-top: 1px solid var(--border-hi);
+    border-left: 1px solid var(--border-hi);
+  }
+  @media (max-width: 760px) { .tech-grid { grid-template-columns: 1fr; } }
+  .tech-cell {
+    padding: 40px 36px;
+    border-right: 1px solid var(--border-hi);
+    border-bottom: 1px solid var(--border-hi);
+    position: relative;
+    transition: background 0.5s var(--ease-paper);
+  }
+  .tech-cell:hover { background: var(--surface); }
+  .tech-cell::before {
+    content: ""; position: absolute; inset: 0;
+    background: radial-gradient(360px circle at var(--mx, 50%) var(--my, 50%), rgba(63, 90, 58, 0.07), transparent 60%);
+    opacity: 0; transition: opacity 0.4s;
+    pointer-events: none;
+  }
+  .tech-cell:hover::before { opacity: 1; }
+  .tech-cell .ttl {
+    font-family: var(--display);
+    font-size: 32px;
+    line-height: 1.05;
+    letter-spacing: -0.015em;
+    margin-bottom: 14px;
+  }
+  .tech-cell p {
+    color: var(--text-dim);
+    font-size: 14px; line-height: 1.6;
+    max-width: 38ch;
+  }
+  .tech-cell .specs {
+    margin-top: 26px;
+    padding-top: 20px;
+    border-top: 1px dashed var(--border-hi);
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .tech-cell .specs .s {
+    display: flex; justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 11px; letter-spacing: 0.04em;
+  }
+  .tech-cell .specs .s .k { color: var(--text-mute); text-transform: uppercase; letter-spacing: 0.18em; font-size: 10px; }
+  .tech-cell .specs .s .v { color: var(--text); }
+</style>
+</head>
+
+<body>
+<div class="cursor-blob"></div>
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="index.html" class="wordmark">Roomen<span class="ai">ai</span></a>
+  <div class="nav-links">
+    <a href="index.html" class="nav-link">Index</a>
+    <a href="how-it-works.html" class="nav-link active">How it works</a>
+    <a href="pricing.html" class="nav-link">Subscription</a>
+    <a href="index.html#gallery" class="nav-link">Gallery</a>
+  </div>
+  <div class="nav-right">
+    <a href="../how-it-works.html" class="nav-link" style="opacity:0.55;">Classic view</a>
+    <a href="#" class="btn btn-primary btn-sm">Begin <span class="arrow">→</span></a>
+  </div>
+</nav>
+
+<main>
+
+  <!-- HERO -->
+  <section class="section wrap" style="padding-top: 60px;" data-screen-label="01 How it works hero">
+    <div class="chapter-label" data-reveal>
+      <span class="no">N° 02</span><span class="dash"></span><span class="title">How it works</span>
+    </div>
+    <h1 class="h-hero" data-reveal-stagger>
+      <span style="display:block;">From photograph</span>
+      <span style="display:block;">to <span class="serif-it accent">front door,</span></span>
+      <span style="display:block;">in seven seconds.</span>
+    </h1>
+    <p class="lead" style="margin-top: 36px; max-width: 50ch;" data-reveal data-reveal-delay="600">
+      Here's exactly what happens between snapping a picture of your room and your new sofa showing up on Thursday. Four chapters.
+    </p>
+  </section>
+
+  <!-- CHAPTERS -->
+  <section class="wrap">
+    <div class="chapters-rail">
+      <div class="rail-fill" id="railFill"></div>
+
+      <article class="chapter" data-reveal-stagger>
+        <div class="chapter-no"><span data-reveal-line><span class="line-inner">01</span></span></div>
+        <div class="chapter-text">
+          <span class="lab">Capture — 3 seconds</span>
+          <h3>One <span class="it">wide</span> shot.</h3>
+          <p>No panorama. No LiDAR. No measuring tape. Our scene model needs a single photograph to map your room — walls, floor, ceiling, windows, and the direction your light is coming from.</p>
+          <div class="marks">
+            <div class="mk"><span class="ck">N° 01</span> Detects walls, floor, ceiling, windows</div>
+            <div class="mk"><span class="ck">N° 02</span> Estimates room dimensions to ±4%</div>
+            <div class="mk"><span class="ck">N° 03</span> Preserves natural lighting direction</div>
+          </div>
+        </div>
+        <div class="chapter-vis cv-1" data-tilt="2.5">
+          <span class="cv-stamp">CAPTURE — N° 01</span>
+          <span class="cv-stamp-r">Scanning</span>
+          <div class="phone-frame">
+            <div class="phone-window">
+              <div class="scan-line"></div>
+              <div class="phone-target"><span></span><span></span></div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="chapter" data-reveal-stagger>
+        <div class="chapter-no"><span data-reveal-line><span class="line-inner">02</span></span></div>
+        <div class="chapter-text">
+          <span class="lab">Direction — 1 second</span>
+          <h3>Choose a <span class="it">vibe.</span></h3>
+          <p>Pick one of fourteen curated styles — Japandi, Scandinavian, Mid-century, and on — or describe what you want in plain English. The system commits to a direction before it touches a pixel.</p>
+          <div class="marks">
+            <div class="mk"><span class="ck">N° 01</span> Fourteen curated style models</div>
+            <div class="mk"><span class="ck">N° 02</span> Custom prompts welcome</div>
+            <div class="mk"><span class="ck">N° 03</span> Budget &amp; palette locks</div>
+          </div>
+        </div>
+        <div class="chapter-vis cv-2" data-tilt="2.5">
+          <div class="styles-grid">
+            <div class="st s1"><span class="lab">Japandi</span></div>
+            <div class="st s2 active"><span class="lab">Scandi</span></div>
+            <div class="st s3"><span class="lab">Boho</span></div>
+            <div class="st s4"><span class="lab">Wabi-sabi</span></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="chapter" data-reveal-stagger>
+        <div class="chapter-no"><span data-reveal-line><span class="line-inner">03</span></span></div>
+        <div class="chapter-text">
+          <span class="lab">Restyle — 7 seconds</span>
+          <h3>Restyle &amp; <span class="it">tag.</span></h3>
+          <p>Our diffusion model rebuilds the room in your chosen style — then a separate object-detection pass tags every piece of furniture, plant and accessory. You get six versions to choose from.</p>
+          <div class="marks">
+            <div class="mk"><span class="ck">N° 01</span> Six variations per prompt</div>
+            <div class="mk"><span class="ck">N° 02</span> Per-object bounding boxes</div>
+            <div class="mk"><span class="ck">N° 03</span> Material &amp; colour extraction</div>
+          </div>
+        </div>
+        <div class="chapter-vis cv-3" data-tilt="2.5">
+          <span class="cv-stamp">RESTYLE — N° 042</span>
+          <span class="cv-stamp-r">6 pieces tagged</span>
+          <div class="floor"></div>
+          <div class="cv-tag" style="top: 26%; left: 12%; animation-delay: 0s;">
+            <span class="pip"></span><span class="nm">Linen Sofa</span><span class="pr">$849</span>
+          </div>
+          <div class="cv-tag" style="top: 50%; right: 8%; animation-delay: -2s;">
+            <span class="pip"></span><span class="nm">Wool Rug</span><span class="pr">$284</span>
+          </div>
+          <div class="cv-tag" style="bottom: 14%; left: 16%; animation-delay: -3.5s;">
+            <span class="pip"></span><span class="nm">Oak Lamp</span><span class="pr">$129</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="chapter" data-reveal-stagger>
+        <div class="chapter-no"><span data-reveal-line><span class="line-inner">04</span></span></div>
+        <div class="chapter-text">
+          <span class="lab">Checkout — 2 seconds</span>
+          <h3>Match &amp; <span class="it">check out.</span></h3>
+          <p>For every tagged item, RoomenAI queries our 4,200-store index. It matches by silhouette, material and price — verifies stock and shipping to your zip — and assembles one cart with split fulfillment.</p>
+          <div class="marks">
+            <div class="mk"><span class="ck">N° 01</span> Amazon, Etsy, plus 4,200 stores</div>
+            <div class="mk"><span class="ck">N° 02</span> Live stock + shipping ETAs</div>
+            <div class="mk"><span class="ck">N° 03</span> One checkout, split fulfillment</div>
+          </div>
+        </div>
+        <div class="chapter-vis cv-4" data-tilt="2.5">
+          <div class="cv-cart">
+            <div class="row"><div class="sw"></div><div><div class="nm">Linen Sofa, Sand</div><div class="src">N° 01 · Amazon</div></div><div class="pr">$849</div></div>
+            <div class="row"><div class="sw" style="background: linear-gradient(135deg, #B8C0B5, #5F7263);"></div><div><div class="nm">Wool Rug 8 × 10</div><div class="src">N° 02 · Amazon</div></div><div class="pr">$284</div></div>
+            <div class="row"><div class="sw" style="background: linear-gradient(135deg, #D4C4A8, #A88A66);"></div><div><div class="nm">Oak Floor Lamp</div><div class="src">N° 03 · Etsy</div></div><div class="pr">$129</div></div>
+            <div class="row"><div class="sw" style="background: linear-gradient(135deg, #B89880, #6E513E);"></div><div><div class="nm">Brass Sconce, Pair</div><div class="src">N° 04 · Etsy</div></div><div class="pr">$89</div></div>
+            <div class="total"><span class="l">Estimated total</span><span class="v">$1,351</span></div>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- UNDER THE HOOD -->
+  <section class="section wrap">
+    <header class="section-header" data-reveal-stagger>
+      <div class="left">
+        <div class="chapter-label">
+          <span class="no">N° 05</span><span class="dash"></span><span class="title">Under the hood</span>
+        </div>
+      </div>
+      <div class="right">
+        <h2 class="h-2">Three models, <span class="serif-it accent">one tap.</span></h2>
+        <p class="lead" style="margin-top: 24px;">Most "AI redesign" tools stop at a pretty render. RoomenAI runs three separate models in sequence — and that's why the products you see are actually buyable.</p>
+      </div>
+    </header>
+
+    <div class="tech-grid" data-reveal-stagger>
+      <div class="tech-cell">
+        <span class="kicker kicker-accent">Geometry</span>
+        <div class="ttl" style="margin-top: 14px;">The <span class="it">scene</span> model.</div>
+        <p>A custom geometry network that infers your room's 3D structure from a single photo. Trained on 1.4M annotated interior scenes plus synthetic data we generate ourselves.</p>
+        <div class="specs">
+          <div class="s"><span class="k">Model</span><span class="v">geom-v3.2</span></div>
+          <div class="s"><span class="k">Parameters</span><span class="v">1.8 billion</span></div>
+          <div class="s"><span class="k">Runtime</span><span class="v">2.4 s · A100</span></div>
+        </div>
+      </div>
+      <div class="tech-cell">
+        <span class="kicker kicker-accent">Diffusion</span>
+        <div class="ttl" style="margin-top: 14px;">Restyle <span class="it">in place.</span></div>
+        <p>A controllable diffusion model that respects your room's structure exactly. Walls don't move, windows don't disappear — only the furniture, materials and palette change.</p>
+        <div class="specs">
+          <div class="s"><span class="k">Model</span><span class="v">restyle-v2.4</span></div>
+          <div class="s"><span class="k">Parameters</span><span class="v">4.7 billion</span></div>
+          <div class="s"><span class="k">Runtime</span><span class="v">5.1 s · A100</span></div>
+        </div>
+      </div>
+      <div class="tech-cell">
+        <span class="kicker kicker-accent">Retrieval</span>
+        <div class="ttl" style="margin-top: 14px;">The <span class="it">match.</span></div>
+        <p>A retrieval system that takes any object crop from the render and finds the visually-closest in-stock listing across our 4,200-store index. Sub-second across 38M SKUs.</p>
+        <div class="specs">
+          <div class="s"><span class="k">Model</span><span class="v">match-clip-v5</span></div>
+          <div class="s"><span class="k">Index</span><span class="v">38 million SKUs</span></div>
+          <div class="s"><span class="k">Runtime</span><span class="v">680 ms / object</span></div>
+        </div>
+      </div>
+      <div class="tech-cell">
+        <span class="kicker kicker-accent">Commerce</span>
+        <div class="ttl" style="margin-top: 14px;">One <span class="it">cart.</span></div>
+        <p>Our commerce layer verifies stock, computes shipping to your postcode, and consolidates checkout into a single transaction with split fulfillment across vendors.</p>
+        <div class="specs">
+          <div class="s"><span class="k">Retailers</span><span class="v">4,200+</span></div>
+          <div class="s"><span class="k">Coverage</span><span class="v">US · UK · EU · AU</span></div>
+          <div class="s"><span class="k">Fulfillment</span><span class="v">Multi-vendor</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section wrap">
+    <header class="section-header" data-reveal-stagger>
+      <div class="left">
+        <div class="chapter-label">
+          <span class="no">N° 06</span><span class="dash"></span><span class="title">Questions</span>
+        </div>
+      </div>
+      <div class="right">
+        <h2 class="h-2">Common <span class="serif-it accent">queries.</span></h2>
+      </div>
+    </header>
+
+    <div class="faq" data-reveal>
+      <div class="faq-item">
+        <button class="faq-q"><span class="no">N° 01</span><span class="qt">Does it work with cluttered rooms?</span><span class="ic">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Yes — actually that's the most common starting point. The geometry model reads through clutter to find the real room. You'll get a clean restyle even if your "before" looks like a teenager's bedroom.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q"><span class="no">N° 02</span><span class="qt">What if I want to keep my existing sofa?</span><span class="ic">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Tap the sofa in any render and choose "Lock this." RoomenAI will rebuild the rest of the room around it, and won't show you replacement sofa products in the shopping list.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q"><span class="no">N° 03</span><span class="qt">How accurate are the product matches?</span><span class="ic">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Our matcher is tuned for silhouette, material, and scale — not exact copies of what the diffusion model invented. You'll get the closest real thing that ships — usually a within-5%-of-the-render lookalike. We show match confidence on each item.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q"><span class="no">N° 04</span><span class="qt">Does it work for outdoor spaces?</span><span class="ic">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Patios, balconies, and small backyards are supported in v1.2. Full landscape design is coming in v1.4 — we're training a separate model on outdoor scenes.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q"><span class="no">N° 05</span><span class="qt">Is my room photo private?</span><span class="ic">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Your photos are encrypted in transit and at rest, never used for training, and deleted after 30 days unless you save them to your gallery. We don't sell anything to anyone.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q"><span class="no">N° 06</span><span class="qt">Can I return things easily?</span><span class="ic">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Every item routes returns back to the original retailer. From our app you can start a return with one tap — we handle the paperwork and the QR code. Refunds come back to your card the way they normally would.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section wrap">
+    <div class="cta-block" data-reveal>
+      <div class="chapter-label" style="justify-content: center;">
+        <span class="no">N° 042</span><span class="dash"></span><span class="title">Free to begin</span>
+      </div>
+      <h2 class="h-1">Take the <span class="serif-it accent">photograph.</span></h2>
+      <p class="lead">Three free restyles. No card needed. See your living room reimagined in under a minute.</p>
+      <div class="row">
+        <a href="#" class="btn btn-primary btn-lg">Begin a new room <span class="arrow">→</span></a>
+        <a href="pricing.html" class="btn btn-ghost btn-lg">Subscription</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot-wordmark" aria-hidden="true">Roomen<span class="it">ai</span></div>
+
+  <!-- FOOTER -->
+  <footer class="foot">
+    <div class="wrap">
+      <div class="foot-top">
+        <div>
+          <a href="index.html" class="wordmark">Roomen<span class="ai">ai</span></a>
+          <div class="blurb">A designer <span class="it">in your pocket.</span> Plus checkout.</div>
+        </div>
+        <div>
+          <h6>Product</h6>
+          <ul>
+            <li><a href="how-it-works.html">How it works</a></li>
+            <li><a href="pricing.html">Subscription</a></li>
+            <li><a href="#">iOS app</a></li>
+            <li><a href="#">Android app</a></li>
+            <li><a href="#">For designers</a></li>
+          </ul>
+        </div>
+        <div>
+          <h6>Company</h6>
+          <ul>
+            <li><a href="#">About</a></li>
+            <li><a href="#">Journal</a></li>
+            <li><a href="#">Press</a></li>
+            <li><a href="#">Careers</a></li>
+          </ul>
+        </div>
+        <div>
+          <h6>Legal</h6>
+          <ul>
+            <li><a href="#">Privacy</a></li>
+            <li><a href="#">Terms</a></li>
+            <li><a href="#">Cookies</a></li>
+            <li><a href="#">DMCA</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="foot-bottom">
+        <span>© 2026 RoomenAI Labs Inc.</span>
+        <span>Salon edition · Issue 04</span>
+      </div>
+    </div>
+  </footer>
+
+</main>
+
+<script src="motion.js"></script>
+<script>
+  function updateChapters() {
+    const rail = document.querySelector('.chapters-rail');
+    const fill = document.getElementById('railFill');
+    if (!rail || !fill) return;
+    const r = rail.getBoundingClientRect();
+    const winH = window.innerHeight;
+    const start = winH * 0.55;
+    const visibleStart = Math.max(0, start - r.top);
+    const pct = Math.max(0, Math.min(1, visibleStart / r.height));
+    fill.style.height = (pct * r.height) + 'px';
+
+    document.querySelectorAll('.chapter').forEach((c) => {
+      const cr = c.getBoundingClientRect();
+      const on = cr.top < winH * 0.6 && cr.bottom > winH * 0.25;
+      c.classList.toggle('is-current', on);
+    });
+  }
+  window.addEventListener('scroll', updateChapters, { passive: true });
+  window.addEventListener('resize', updateChapters);
+  updateChapters();
+</script>
+</body>
+</html>
